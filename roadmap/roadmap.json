@@ -1,0 +1,321 @@
+{
+ "schema": "0.1",
+ "updated": "2026-10-28",
+ "systems": [
+  "Menus & home",
+  "Player ratings",
+  "Regens",
+  "Academy",
+  "Playing styles",
+  "Club economy",
+  "Boards",
+  "Injuries",
+  "Referees",
+  "Lower divisions",
+  "Match stats",
+  "Foundation"
+ ],
+ "features": [
+  {
+   "name": "RFP start and loading screens",
+   "line": "A clean full-screen title screen and RFP wallpapers on the way to the menu.",
+   "system": "Menus & home",
+   "stage": "released",
+   "chip": "ready"
+  },
+  {
+   "name": "RFP top menu",
+   "line": "A new main menu with the RFP wordmark and slanted highlights; myClub hidden, Multiplayer in its place.",
+   "system": "Menus & home",
+   "stage": "now",
+   "chip": "testing"
+  },
+  {
+   "name": "Six-tab Master League menu",
+   "line": "HOME · MATCHDAY · SQUAD · RECRUITMENT · ACADEMY · CLUB, every screen where you'd look for it. The Youth Team becomes Under 21s; Square saves.",
+   "system": "Menus & home",
+   "stage": "released",
+   "chip": "ready"
+  },
+  {
+   "name": "Club-colour Master League home",
+   "line": "The home menu takes your club's colours, for any club, with a slanted plate on the selected tab.",
+   "system": "Menus & home",
+   "stage": "now",
+   "chip": "testing"
+  },
+  {
+   "name": "More tabs and a restyled home",
+   "line": "More room in the menu, and the home background and panels in the RFP look.",
+   "system": "Menus & home",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "In-game inbox and newsroom",
+   "line": "An FM-style inbox on the home screen: news from every RFP system, and decisions you answer. The lead story is always the most urgent one.",
+   "system": "Menus & home",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Home dashboard",
+   "line": "Next match and table, squad status, scouting, academy and a Data Centre brief for the next match on one screen.",
+   "system": "Menus & home",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Button art for your controller",
+   "line": "Button prompts follow your controller setting, PlayStation or Xbox.",
+   "system": "Menus & home",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Words, not numbers",
+   "line": "All 25 abilities read as words on a nine-step scale (Poor → World Class). Playing styles and the hexagon stay.",
+   "system": "Player ratings",
+   "stage": "released",
+   "chip": "ready"
+  },
+  {
+   "name": "No OVR",
+   "line": "The overall rating disappears; judge players by what they do.",
+   "system": "Player ratings",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Scouted, fuzzy ratings",
+   "line": "Your players are exact; other clubs' players are fuzzy, and a better scouting department makes them clearer.",
+   "system": "Player ratings",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "New names, real nationality mix",
+   "line": "Retired players come back with a new, nationality-correct name, and clubs sign the mix of nationalities real clubs do. Your youth intake is local.",
+   "system": "Regens",
+   "stage": "released",
+   "chip": "ready"
+  },
+  {
+   "name": "Fresh regen profiles",
+   "line": "New position, style, skills and body for every regen, a generic face instead of a retired star's, and skin tone by nationality.",
+   "system": "Regens",
+   "stage": "released",
+   "chip": "ready"
+  },
+  {
+   "name": "A unique 3D face for every regen",
+   "line": "Faces and hair generated for each new player from his nationality and family background.",
+   "system": "Regens",
+   "stage": "now",
+   "chip": "testing"
+  },
+  {
+   "name": "Name pools for every nationality",
+   "line": "Realistic names for every PES nationality, including players who carry their family's naming tradition.",
+   "system": "Regens",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "Talent that follows the real world",
+   "line": "How good a new player can become depends on his country, his club and its academy, as in real football.",
+   "system": "Regens",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Eyes and hair by region",
+   "line": "Eye colour, hair colour and eye shape follow nationality.",
+   "system": "Regens",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Academy levels modelled on real academies",
+   "line": "Eight academy levels, from no academy to the world's best, each with real examples. Spending decides the level, and the level decides how far your scouts reach.",
+   "system": "Academy",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Youth growth that depends on you",
+   "line": "Youngsters arrive with hidden potential and grow with coaching, facilities, minutes and form.",
+   "system": "Academy",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "Academy players stay to 21",
+   "line": "Academy players stay until 21, then leave as free agents.",
+   "system": "Academy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "AI academies",
+   "line": "AI clubs develop their youngsters under the same rules as you.",
+   "system": "Academy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Truly new players",
+   "line": "Brand-new players created mid-career instead of reusing retired ones.",
+   "system": "Academy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Retuned playing styles",
+   "line": "Styles tuned so each one plays more like its real-world type.",
+   "system": "Playing styles",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "New playing styles",
+   "line": "Playing styles the base game doesn't have.",
+   "system": "Playing styles",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Player traits and tendencies",
+   "line": "Per-player traits, and players who lean toward behaviours by degree instead of an on/off style.",
+   "system": "Playing styles",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Real club finances",
+   "line": "Matchday, broadcast, commercial, trading and prize money, line by line. What you earn this season funds the next.",
+   "system": "Club economy",
+   "stage": "now",
+   "chip": "testing"
+  },
+  {
+   "name": "Board budget meeting",
+   "line": "Each pre-season the board sets limits per department; you allocate inside them; what's left becomes your transfer and wage budgets.",
+   "system": "Club economy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Reputation, TV money and sponsors",
+   "line": "Leagues and clubs ranked by results; broadcast and sponsorship money follow the rank.",
+   "system": "Club economy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Club departments and facilities",
+   "line": "Academy, scouting, medical, training, stadium and more: fund them, build them up over real build times, or watch them decline.",
+   "system": "Club economy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Debt, financial rules and AI budgets",
+   "line": "Debt has consequences, UEFA-style rules bite, and AI clubs only buy what they can afford.",
+   "system": "Club economy",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Boards with character",
+   "line": "Every club has an ownership model and a board type, from patient custodians to revolving-door owners.",
+   "system": "Boards",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Boards that steer AI transfers",
+   "line": "Each AI club buys, sells, loans and renews the way its board wants.",
+   "system": "Boards",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Boards change",
+   "line": "Elections, takeovers and trustee periods change a club's board mid-career.",
+   "system": "Boards",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "Sackings and hirings",
+   "line": "AI boards sack and hire coaches on their own expectations, at any point of the season.",
+   "system": "Boards",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Your job on the line",
+   "line": "Your board judges you on the same model, and a new board recruits differently.",
+   "system": "Boards",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Injuries for every club, from real data",
+   "line": "AI clubs get injured too. Match and training injuries with types and lengths from elite-football data; your medical staff change the odds.",
+   "system": "Injuries",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Rehab and surgery",
+   "line": "Serious injuries need surgery, and players come back through rehab.",
+   "system": "Injuries",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Referees, cards and suspensions",
+   "line": "Fouls, cards and bans that behave like real football, simulated matches included.",
+   "system": "Referees",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "New lower divisions",
+   "line": "Real lower divisions added under existing leagues, with promotion and relegation.",
+   "system": "Lower divisions",
+   "stage": "now",
+   "chip": null
+  },
+  {
+   "name": "Running data",
+   "line": "Distance, sprints and heatmaps, per 90 minutes.",
+   "system": "Match stats",
+   "stage": "next",
+   "chip": null
+  },
+  {
+   "name": "Real-world xG",
+   "line": "Expected goals and post-shot xG from a model trained on real shots.",
+   "system": "Match stats",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Match report",
+   "line": "Pass maps, defensive maps and the full match report, first on a second screen, later in the game.",
+   "system": "Match stats",
+   "stage": "later",
+   "chip": null
+  },
+  {
+   "name": "Mod data that follows your save",
+   "line": "RFP's career data saves and reloads with the game, and each career keeps its own.",
+   "system": "Foundation",
+   "stage": "released",
+   "chip": "ready"
+  }
+ ]
+}

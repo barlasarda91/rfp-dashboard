@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RFP Lab Roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="What RFP Lab for PES 2021 is building now, next and later.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: RFP career-shell look. Slanted plate masthead, system filter rail, four stage columns (Now / Next / Later / Released) that stack on phones. Single dark look by design. */
+:root {
+  --ground: #0B0B0A; --tile: #161613; --tile-2: #1F1F1B; --line: #2B2A26;
+  --chalk: #F2EFE4; --muted: #A3A095; --faint: #6B6961; --plate-ink: #0A0A09;
+  --now: #E0B04A; --next: #F2EFE4; --later: #6B6961; --done: #7FB77E;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
+  --slant: -17deg;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--ground); }
+body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--body); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* masthead */
+.mast { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 28px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 14px; }
+.plate { display: inline-block; background: var(--chalk); color: var(--plate-ink); transform: skewX(var(--slant)); padding: 4px 16px; }
+.plate > span { display: inline-block; transform: skewX(calc(var(--slant) * -1)); font: 800 26px/1 var(--display); letter-spacing: .02em; }
+.brand h1 { margin: 0; font: 700 44px/0.95 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+.brand h1 small { display: block; font: 500 12px/1.2 var(--mono); color: var(--muted); letter-spacing: .12em; margin-top: 6px; }
+.intro { flex: 1 1 340px; max-width: 62ch; margin: 0; color: var(--muted); }
+.intro b { color: var(--chalk); font-weight: 600; }
+
+/* system filter */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 0 22px; }
+.fbtn { font: 600 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; transform: skewX(var(--slant)); }
+.fbtn > span { display: inline-block; transform: skewX(calc(var(--slant) * -1)); }
+.fbtn:hover { color: var(--chalk); border-color: var(--faint); }
+.fbtn[aria-pressed="true"] { background: var(--chalk); color: var(--plate-ink); border-color: var(--chalk); }
+.fbtn:focus-visible { outline: 2px solid var(--now); outline-offset: 2px; }
+.fbtn .n { font: 500 11px/1 var(--mono); margin-left: 6px; opacity: .7; }
+
+/* stages */
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.stage { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.shead { position: relative; padding: 0 0 12px 22px; border-bottom: 2px solid var(--c); }
+.shead::before { content: ""; position: absolute; left: 4px; top: 4px; width: 9px; height: 26px; background: var(--c); transform: skewX(var(--slant)); }
+.shead h2 { margin: 0; font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; display: flex; align-items: baseline; gap: 10px; }
+.shead h2 .n { font: 500 13px/1 var(--mono); color: var(--muted); }
+.shead p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.note { margin: 2px 0 4px; padding: 10px 12px; font-size: 13px; color: var(--muted); border: 1px dashed var(--line); }
+.card { background: var(--tile); padding: 14px 14px 15px; display: flex; flex-direction: column; gap: 6px; border-left: 3px solid var(--c); min-width: 0; }
+.card .sys { font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.card h3 { margin: 0; font: 700 21px/1.1 var(--display); text-wrap: balance; }
+.card p { margin: 0; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.chip { align-self: flex-start; margin-top: 4px; font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 8px; color: var(--c); border: 1px solid var(--c); }
+.empty { font-size: 13px; color: var(--faint); padding: 8px 0; }
+.s-now { --c: var(--now); } .s-next { --c: var(--next); } .s-later { --c: var(--later); } .s-released { --c: var(--done); }
+.s-later .card { background: transparent; border: 1px solid var(--line); border-left: 3px solid var(--c); }
+
+.foot { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: 12.5px; color: var(--faint); }
+.foot b { color: var(--muted); font-weight: 600; }
+.err { color: var(--muted); border: 1px solid var(--line); padding: 16px; }
+
+@media (max-width: 1100px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .brand h1 { font-size: 36px; }
+}
+@media (prefers-reduced-motion: no-preference) { .card { transition: opacity .15s; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">
+      <div class="plate" aria-hidden="true"><span>RFP</span></div>
+      <h1>Lab roadmap<small>PES 2021 · MASTER LEAGUE</small></h1>
+    </div>
+    <p class="intro">What we're building for <b>RFP Lab</b>, a set of free mods that make PES 2021's Master League play like real football management. Stages update from our working boards as the work moves.</p>
+  </header>
+
+  <nav class="filters" id="filters" aria-label="Filter by system"></nav>
+  <main class="board" id="board" aria-live="polite"></main>
+
+  <footer class="foot">
+    <span><b>RFP Lab for PES 2021</b> · a free, non-commercial fan project. Not affiliated with or endorsed by Konami.</span>
+    <span id="updated"></span>
+  </footer>
+</div>
+
+
+<script>
+(() => {
+  const STAGES = [
+    { id: "now", title: "Now", sub: "In work right now." },
+    { id: "next", title: "Next", sub: "Starts when the current work lands." },
+    { id: "later", title: "Later", sub: "Designed or planned, not started." },
+    { id: "released", title: "Released", sub: "Done and playable." }
+  ];
+  const CHIP = { testing: "In testing", ready: "Ready for the first build", out: "Out now" };
+  const KEY = "rfp_roadmap_v1";
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let DATA = null, sys = "all";
+  try { sys = localStorage.getItem(KEY) || "all"; } catch (e) {}
+
+  function fmt(d) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || "");
+    if (!m) return "";
+    const mon = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2] - 1];
+    return `Updated ${+m[3]} ${mon} ${m[1]}`;
+  }
+
+  function filters() {
+    const count = s => DATA.features.filter(f => s === "all" || f.system === s).length;
+    const list = ["all", ...DATA.systems.filter(s => count(s))];
+    if (!list.includes(sys)) sys = "all";
+    document.getElementById("filters").innerHTML = list.map(s =>
+      `<button class="fbtn" type="button" data-s="${esc(s)}" aria-pressed="${s === sys}"><span>${s === "all" ? "Everything" : esc(s)}<span class="n">${count(s)}</span></span></button>`
+    ).join("");
+  }
+
+  function board() {
+    const feats = DATA.features.filter(f => sys === "all" || f.system === sys);
+    const anyOut = DATA.features.some(f => f.chip === "out");
+    document.getElementById("board").innerHTML = STAGES.map(st => {
+      const rows = feats.filter(f => f.stage === st.id);
+      const note = st.id === "released" && !anyOut
+        ? `<div class="note">The first free build isn't out yet. These features are done and tested, and they go into it.</div>` : "";
+      const cards = rows.length ? rows.map(f => `
+        <article class="card">
+          ${sys === "all" ? `<span class="sys">${esc(f.system)}</span>` : ""}
+          <h3>${esc(f.name)}</h3>
+          <p>${esc(f.line)}</p>
+          ${f.chip ? `<span class="chip">${CHIP[f.chip] || esc(f.chip)}</span>` : ""}
+        </article>`).join("") : `<div class="empty">Nothing here for this system yet.</div>`;
+      return `<section class="stage s-${st.id}" aria-labelledby="h-${st.id}">
+        <div class="shead"><h2 id="h-${st.id}">${st.title}<span class="n">${rows.length}</span></h2><p>${st.sub}</p></div>
+        ${note}${cards}
+      </section>`;
+    }).join("");
+  }
+
+  function render() { filters(); board(); document.getElementById("updated").textContent = fmt(DATA.updated); }
+
+  document.getElementById("filters").addEventListener("click", e => {
+    const b = e.target.closest(".fbtn"); if (!b) return;
+    sys = b.dataset.s; try { localStorage.setItem(KEY, sys); } catch (err) {}
+    render();
+  });
+
+  async function load() {
+    const inline = document.getElementById("rfp-data");
+    try {
+      DATA = inline ? JSON.parse(inline.textContent)
+                    : await (await fetch("roadmap.json", { cache: "no-store" })).json();
+      render();
+    } catch (e) {
+      document.getElementById("board").innerHTML = `<div class="err">The roadmap didn't load. Reload the page; if it still fails, the data file is being updated, so try again in a minute.</div>`;
+    }
+  }
+  load();
+})();
+</script>
+</body>
+</html>
