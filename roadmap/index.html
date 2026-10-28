@@ -214,22 +214,27 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
   let hitWin = null;
   const show = (id, v) => { if (typeof v === "number") { document.getElementById(id).textContent = nf.format(v); live.hidden = false; } };
   async function call(kind, key) {
-    try { const r = await fetch(`${API}/${kind}/${NS}/${key}`, { cache: "no-store" }); return r.ok ? (await r.json()).value : (kind === "get" && r.status === 404 ? 0 : null); }
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), 20000);
+    try { const r = await fetch(`${API}/${kind}/${NS}/${key}`, { cache: "no-store", signal: ac.signal }); return r.ok ? (await r.json()).value : (kind === "get" && r.status === 404 ? 0 : null); }
     catch (e) { return null; }
+    finally { clearTimeout(t); }
   }
-  async function tick(first) {
-    const w = win();
-    if (w !== hitWin) { hitWin = w; show("v-now", await call("hit", "now-" + w)); }
-    else show("v-now", await call("get", "now-" + w));
-    show("v-today", await call(first ? "hit" : "get", "views-" + day()));
+  let todayHit = false;
+  function tick() {
+    /* both counters in parallel; the service can be slow, so one never waits for the other */
+    const w = win(), nowKind = w !== hitWin ? "hit" : "get";
+    if (nowKind === "hit") hitWin = w;
+    call(nowKind, "now-" + w).then(v => { if (v === null && nowKind === "hit") hitWin = null; show("v-now", v); });
+    const todayKind = todayHit ? "get" : "hit";
+    call(todayKind, "views-" + day()).then(v => { if (v !== null && todayKind === "hit") todayHit = true; show("v-today", v); });
   }
   if (document.getElementById("rfp-data")) {
     show("v-now", 3); show("v-today", 128);   /* mockup only: sample numbers */
   } else {
-    tick(true);
-    setInterval(() => tick(false), 60000);
-    setTimeout(function edge() { tick(false); setTimeout(edge, WIN - (Date.now() % WIN) + Math.random() * 5000); }, WIN - (Date.now() % WIN) + Math.random() * 5000);
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(false); });
+    tick();
+    setInterval(tick, 60000);
+    setTimeout(function edge() { tick(); setTimeout(edge, WIN - (Date.now() % WIN) + Math.random() * 5000); }, WIN - (Date.now() % WIN) + Math.random() * 5000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
   }
 })();
 </script>
