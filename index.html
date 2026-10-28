@@ -243,6 +243,31 @@ a.openchat, .li a, a.lb { color: var(--chalk); text-underline-offset: 3px; font:
 a.lb { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 a.lb:hover { text-decoration: underline }
 .setup .note { border-left: 2px solid var(--alert) }
+/* v0.6 Tests tab */
+.vtab .tn { font: 500 11px/1 var(--mono); margin-left: 6px; padding: 2px 5px; background: var(--chalk); color: var(--plate-ink) }
+.vtab .tn:empty { display: none }
+.vtab[aria-selected="true"] .tn { background: var(--plate-ink); color: var(--chalk) }
+.tests { padding-block: 18px 34px; display: grid; gap: 10px }
+.thead { padding-bottom: 4px }
+.tcard { display: grid; grid-template-columns: 230px minmax(0, 1fr) 280px; background: var(--tile); box-shadow: inset 4px 0 0 var(--gc, var(--chalk)); min-width: 0 }
+.tcard > div { padding: 14px 16px; min-width: 0; display: grid; gap: 8px; align-content: start }
+.tbuild { background: var(--ground) }
+.bname { font: 800 26px/0.95 var(--display); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere }
+.bname.none { color: var(--faint); font-size: 18px }
+.tbuild .mono { font-size: 12px; color: color-mix(in srgb, var(--chalk) 60%, transparent) }
+.wait { justify-self: start; font: 700 12px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 5px 9px; background: var(--chalk); color: var(--plate-ink); transform: skewX(var(--slant)) }
+.wait.over { background: var(--alert); color: var(--plate-ink) }
+.tbody h3 { font: 600 17px/1.3 var(--body); text-transform: none; letter-spacing: 0 }
+.tbody .mono { font-size: 12px }
+.tdet { font-size: 14.5px; color: color-mix(in srgb, var(--chalk) 80%, transparent) }
+.tbody ol { margin: 0; padding-left: 20px; font-size: 14px; display: grid; gap: 3px }
+.tside { border-left: 1px solid var(--line) }
+.tside .send { font: 400 13px/1.5 var(--mono); border-left: 2px solid var(--chalk); padding-left: 10px; overflow-wrap: anywhere }
+.prev { font: 400 12px/1.5 var(--mono); color: color-mix(in srgb, var(--chalk) 70%, transparent) }
+.res { font: 700 11px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 3px 6px; margin-right: 6px; color: var(--plate-ink) }
+.res.pass { background: var(--ok) } .res.fail { background: var(--alert) }
+.tests .k { font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 50%, transparent); display: block; margin-bottom: 4px }
+@media (max-width: 980px) { .tcard { grid-template-columns: minmax(0, 1fr) } .tside { border-left: 0; border-top: 1px solid var(--line) } }
 </style>
 </head>
 <body>
@@ -251,6 +276,7 @@ a.lb:hover { text-decoration: underline }
     <div class="mark"><span class="plate"><span>RFP</span></span><small>Realistic Football Project · Board</small></div>
     <nav class="views" id="views" role="tablist" aria-label="Views">
       <button class="vtab" role="tab" data-v="dashboard" aria-selected="true"><span>Dashboard</span></button>
+      <button class="vtab" role="tab" data-v="tests" aria-selected="false"><span>Tests<span class="tn" id="testsn"></span></span></button>
       <button class="vtab" role="tab" data-v="table" aria-selected="false"><span>Table</span></button>
       <button class="vtab" role="tab" data-v="kanban" aria-selected="false"><span>Kanban</span></button>
       <button class="vtab" role="tab" data-v="timeline" aria-selected="false"><span>Timeline</span></button>
@@ -279,14 +305,14 @@ a.lb:hover { text-decoration: underline }
 
 <footer><div class="wrap">Read-only. Answer in the chat that asked; tell a chat to change a date or priority and it writes it with your mark (A). Data: your private archive repo, status/chats/*.json. <span id="ver"></span></div></footer>
 <script>
-// RFP Dashboard v0.5 (DASH) — read-only board over status/chats/*.json in the private archive repo.
-// Spec: RFP_Dashboard_Design.md (schema v0.3). No build step, no third-party scripts.
+// RFP Dashboard v0.6 (DASH) — read-only board over status/chats/*.json in the private archive repo.
+// Spec: RFP_Dashboard_Design.md (schema v0.4; v0.3 files still load). No build step, no third-party scripts.
 "use strict";
-const VERSION = "0.5";
+const VERSION = "0.6";
 const DEFAULT_REPO = "barlasarda91/RFP-Gamedesign-Filesystem";
 const STATUS_DIR = "status";
 const STALE = 3, DAY = 864e5, MIN_REFRESH_MS = 60e3, AUTO_REFRESH_MS = 5 * 60e3;
-const VIEWS = ["dashboard", "table", "kanban", "timeline"];
+const VIEWS = ["dashboard", "tests", "table", "kanban", "timeline"];
 
 // ---------- storage (this browser only) ----------
 const KEY = "rfp_dash_v1";
@@ -353,6 +379,14 @@ function validate(d, stem) {
     if (!DT.test(i.created || "")) e.push(`${w}.created: not UTC YYYY-MM-DDTHH:MM:SSZ`);
     if (!["open", "closed"].includes(i.state)) e.push(`${w}.state: must be open or closed`);
     for (const k of ["steps", "options"]) if (i[k] !== undefined && !Array.isArray(i[k])) e.push(`${w}.${k}: must be a list`);
+    if (i.result != null && !["pass", "fail"].includes(i.result)) e.push(`${w}.result: "${i.result}" is not pass or fail`);
+    if (i.deployed != null && !DT.test(i.deployed)) e.push(`${w}.deployed: not UTC YYYY-MM-DDTHH:MM:SSZ`);
+    if (i.build != null && (typeof i.build !== "string" || !i.build.trim())) e.push(`${w}.build: must be a non-empty string`);
+    if (d.schema === "0.4" && i.kind === "test") {
+      if (i.state === "open" && (typeof i.build !== "string" || !i.build.trim())) e.push(`${w}.build: an open test must name the build under test`);
+      if (i.state === "open" && !DT.test(i.deployed || "")) e.push(`${w}.deployed: an open test must say when the build was deployed`);
+      if (i.state === "closed" && i.build && !["pass", "fail"].includes(i.result)) e.push(`${w}.result: a closed test of a named build needs pass or fail`);
+    }
   });
   if (!Array.isArray(d.blockers)) e.push("blockers: missing (use [])");
   else d.blockers.forEach((b, n) => {
@@ -596,6 +630,52 @@ function viewTimeline() {
   return h;
 }
 
+// ---------- tests (builds deployed, waiting for Arda's test) ----------
+function openTests() {
+  const q = state.q.trim().toLowerCase();
+  const out = [];
+  for (const c of M.live) for (const i of c.items) {
+    if (i.kind !== "test" || i.state !== "open") continue;
+    if (state.fam && famOf(c.tag) !== state.fam) continue;
+    const step = c.deliverable.steps.find(s => s.id === i.step);
+    if (q && !(c.tag + " " + c.chat + " " + i.title + " " + (i.build || "") + " " + (step ? step.name : "")).toLowerCase().includes(q)) continue;
+    const prev = c.items.filter(x => x.kind === "test" && x.state === "closed" && x.step === i.step && x.result)
+      .sort((a, b) => Date.parse(b.created) - Date.parse(a.created))[0] || null;
+    out.push({ c, i, step, prev, since: i.deployed || i.created });
+  }
+  return out.sort((a, b) => Date.parse(a.since) - Date.parse(b.since));
+}
+function viewTests() {
+  const list = openTests();
+  if (!list.length) return `<div class="tests"><p class="empty" style="padding:24px 0">No builds are waiting for a test.</p></div>`;
+  const chats = new Set(list.map(x => x.c.tag)).size;
+  return `<div class="tests">
+    <div class="thead"><p class="eyebrow">${list.length} build${list.length > 1 ? "s" : ""} from ${chats} chat${chats > 1 ? "s" : ""} waiting for your test · oldest first · the result goes back to the chat that asked</p></div>
+    ${list.map(({ c, i, step, prev, since }) => {
+      const age = ageD(since), old = age > STALE;
+      return `<article class="tcard" style="--gc:${gc(famOf(c.tag))}">
+        <div class="tbuild">
+          <div class="r">${tagHtml(c.tag)}</div>
+          ${i.build ? `<p class="bname">${esc(i.build).replace(/_/g, "_<wbr>")}</p>` : `<p class="bname none">Build not named</p>`}
+          <p class="mono ${old ? "over" : ""}">${i.deployed ? `deployed ${ago(i.deployed)} ago` : `asked ${ago(i.created)} ago`}</p>
+          <p class="wait ${old ? "over" : ""}">${old ? `waiting ${Math.floor(age)} d` : "waiting"}</p>
+        </div>
+        <div class="tbody">
+          <h3>${esc(i.title)}</h3>
+          ${step ? `<p class="mono faint">${esc(i.id)} · step ${esc(step.id)}: ${esc(step.name)}</p>` : ""}
+          ${i.detail ? `<p class="tdet">${esc(i.detail)}</p>` : ""}
+          ${i.steps && i.steps.length ? `<div><span class="k">How to test</span><ol>${i.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>` : ""}
+        </div>
+        <div class="tside">
+          <div><span class="k">Send back to ${esc(c.chat)}</span><p class="send">${esc(i.send_back || "Result in the chat")}</p></div>
+          ${prev ? `<p class="prev"><span class="k">Last test on this step</span><span class="res ${prev.result}">${prev.result}</span> ${esc(prev.build || prev.id)}${prev.result_note ? ` · ${esc(prev.result_note)}` : ""}</p>` : ""}
+          ${chatLink(c)}
+        </div>
+      </article>`;
+    }).join("")}
+  </div>`;
+}
+
 // ---------- dashboard ----------
 function viewDash() {
   const vis = visible();
@@ -667,9 +747,11 @@ function render() {
   te.hidden = !token(); te.className = "tok " + (tk.cls || ""); te.textContent = tk.text;
   if (setup) { renderSetup(state.setupMsg); return; }
   document.querySelectorAll(".vtab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === state.view)));
+  if (M) { const n = M.live.reduce((s, c) => s + c.items.filter(i => i.kind === "test" && i.state === "open").length, 0); $("testsn").textContent = n ? String(n) : ""; }
   if (!haveData) { $("main").innerHTML = `<p class="empty" style="padding:40px 0">${state.loading ? "Loading status files…" : esc(state.error || "")}</p>`; return; }
   renderHero(); renderToolbar();
-  $("main").innerHTML = state.view === "table" ? viewTable() : state.view === "kanban" ? viewKanban() : state.view === "timeline" ? viewTimeline() : viewDash();
+  $("stchips").hidden = state.view === "tests"; $("showdone").parentElement.hidden = state.view === "tests";
+  $("main").innerHTML = state.view === "tests" ? viewTests() : state.view === "table" ? viewTable() : state.view === "kanban" ? viewKanban() : state.view === "timeline" ? viewTimeline() : viewDash();
 }
 let lastLoad = 0, cooldownTimer = null;
 function cooldown() {
@@ -716,7 +798,7 @@ $("tok").addEventListener("click", () => { state.screen = "setup"; render(); });
 $("refresh").addEventListener("click", () => refresh(false));
 setInterval(() => { if (document.visibilityState === "visible" && state.screen === "board" && token()) refresh(false); }, AUTO_REFRESH_MS);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastLoad > AUTO_REFRESH_MS) refresh(false); });
-$("ver").textContent = `RFP Dashboard v${VERSION} · schema 0.3`;
+$("ver").textContent = `RFP Dashboard v${VERSION} · schema 0.4`;
 
 if (token()) refresh(true); else { state.screen = "setup"; render(); }
 
