@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>RFP Dashboard</title>
+<!-- RFP Dashboard (DASH). Read-only board over status/chats/*.json in the private archive repo. Spec: RFP_Dashboard_Design.md. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* RFP career-shell style, neutral Chalk palette. Board model: groups = TAG families, rows = deliverable steps,
+   subitems = asks to Arda. Four views over the same rows: Table, Kanban, Timeline, Dashboard. Status cells are full-bleed colour. */
+:root {
+  color-scheme: dark;
+  --ground: #0B0B0A; --room: #11110F; --rail: #0B0B0A; --tile: #1A1A17; --tile-2: #23231F; --tile-3: #2C2B27;
+  --line: #2B2A26; --chalk: #F2EFE4; --muted: #9A978C; --faint: #6B6961;
+  --alert: #E2554B; --ok: #7FB77E; --work: #E0B04A; --plate: #F2EFE4; --plate-ink: #0A0A09; --mark: #F2EFE4;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --slant: -17deg;
+}
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body { background: var(--room); color: var(--chalk); font: 400 15px/1.45 var(--body); }
+:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.plate { display: inline-block; transform: skewX(var(--slant)); background: var(--plate); color: var(--plate-ink); }
+.plate > span { display: inline-block; transform: skewX(17deg); }
+.eyebrow { font: 500 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 62%, transparent); }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance }
+p { margin: 0 }
+button { font: inherit; color: inherit }
+[hidden] { display: none !important }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums }
+
+/* top rail */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--rail); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--rail); border-bottom: 2px solid var(--mark); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 10px; }
+.mark { display: flex; align-items: center; gap: 12px; margin-right: auto }
+.mark .plate { padding: 3px 12px; font: 800 20px/1 var(--display); letter-spacing: .04em }
+.mark small { font: 500 11px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 62%, transparent) }
+.views { display: flex; gap: 4px; flex-wrap: wrap }
+.vtab { border: 0; cursor: pointer; font: 700 15px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 9px 14px; background: transparent; color: color-mix(in srgb, var(--chalk) 72%, transparent); transform: skewX(var(--slant)) }
+.vtab > span { display: inline-block; transform: skewX(17deg) }
+.vtab:hover { background: var(--tile-2); color: var(--chalk) }
+.vtab[aria-selected="true"] { background: var(--plate); color: var(--plate-ink) }
+.pbtn { border: 0; cursor: pointer; font: 700 14px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 9px 14px; background: transparent; color: var(--chalk); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chalk) 40%, transparent); transform: skewX(var(--slant)) }
+.pbtn > span { display: inline-block; transform: skewX(17deg) }
+.pbtn:hover { background: var(--tile-2) }
+.pbtn.solid { background: var(--plate); color: var(--plate-ink); box-shadow: none }
+.pbtn[disabled] { opacity: .45; cursor: not-allowed }
+.tok { font: 500 11px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 55%, transparent) }
+.tok.warn { color: var(--alert) }
+
+/* hero */
+.hero .wrap { padding-block: 24px 18px; display: grid; gap: 10px }
+.score { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; font: 800 clamp(28px, 4.6vw, 52px)/0.95 var(--display); text-transform: uppercase }
+.score .plate { font-size: .9em; padding: 2px 18px }
+.score .plate > span { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums }
+.score .dim { color: color-mix(in srgb, var(--chalk) 70%, transparent) }
+.score .dim b { font-family: var(--mono); font-weight: 600; font-size: .78em; color: var(--chalk) }
+.score .dim b.alert { color: var(--alert) }
+.meta { font: 400 13px/1.5 var(--mono); color: color-mix(in srgb, var(--chalk) 62%, transparent) }
+.note { font: 400 13px/1.5 var(--mono); border-left: 2px solid var(--plate); padding: 2px 0 2px 12px; max-width: 100ch; display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center }
+.note.warn { border-left-color: var(--alert) }
+.note .pbtn { font-size: 13px; padding: 7px 12px }
+
+/* toolbar */
+.toolbar { border-top: 1px solid color-mix(in srgb, var(--chalk) 10%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--chalk) 10%, transparent); background: var(--ground) }
+.toolbar .wrap { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding-block: 10px }
+.search { font: 400 13px var(--mono); padding: 8px 10px; border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--room); color: var(--chalk); width: min(240px, 100%); border-radius: 0 }
+.search::placeholder { color: var(--faint) }
+.search:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--chalk) }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center }
+.chips .l { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-right: 4px }
+.chip { border: 0; cursor: pointer; font: 600 13px/1 var(--display); letter-spacing: .07em; text-transform: uppercase; padding: 6px 10px; background: var(--tile); color: color-mix(in srgb, var(--chalk) 75%, transparent); transform: skewX(var(--slant)) }
+.chip > span { display: inline-block; transform: skewX(17deg) }
+.chip[aria-pressed="true"] { background: var(--plate); color: var(--plate-ink) }
+.chip .n { font: 500 11px/1 var(--mono); margin-left: 5px; opacity: .7 }
+.toggle { display: inline-flex; gap: 8px; align-items: center; font: 500 12px/1 var(--mono); color: color-mix(in srgb, var(--chalk) 70%, transparent); cursor: pointer }
+.toggle input { accent-color: var(--chalk); width: 15px; height: 15px; margin: 0 }
+
+/* status cells (Monday-style full colour) */
+.st { display: flex; align-items: center; justify-content: center; text-align: center; font: 700 12px/1.1 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 8px 6px; min-height: 34px; color: var(--plate-ink) }
+.st-done { background: var(--ok) }
+.st-work { background: var(--work) }
+.st-wait { background: var(--chalk) }
+.st-stuck { background: var(--alert) }
+.st-todo { background: var(--tile-3); color: color-mix(in srgb, var(--chalk) 75%, transparent) }
+.dot { width: 10px; height: 10px; transform: skewX(var(--slant)); display: inline-block; flex: none }
+.dot.done { background: var(--ok) } .dot.work { background: var(--work) } .dot.wait { background: var(--chalk) } .dot.stuck { background: var(--alert) } .dot.todo { background: var(--tile-3); box-shadow: inset 0 0 0 1px var(--faint) }
+
+.tag { font: 500 11.5px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; padding: 4px 7px; transform: skewX(var(--slant)); display: inline-block; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chalk) 32%, transparent); white-space: nowrap }
+.tag > span { display: inline-block; transform: skewX(17deg) }
+.tag .pfx { color: var(--faint) }
+.kind { font: 700 11px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 4px 7px; transform: skewX(var(--slant)); display: inline-block; flex: none }
+.kind > span { display: inline-block; transform: skewX(17deg) }
+.kind.approval { background: var(--alert); color: var(--plate-ink) }
+.kind.test { background: var(--chalk); color: var(--plate-ink) }
+.kind.decision { box-shadow: inset 0 0 0 1px var(--chalk) }
+.prio { display: inline-flex; gap: 2px; align-items: center }
+.prio i { width: 5px; height: 12px; transform: skewX(var(--slant)); background: var(--tile-3) }
+.prio.p3 i { background: var(--alert) } .prio.p2 i:nth-child(-n+2) { background: var(--work) } .prio.p1 i:first-child { background: var(--muted) }
+.prio b { font: 500 11px/1 var(--mono); color: color-mix(in srgb, var(--chalk) 65%, transparent); margin-left: 6px; text-transform: uppercase; letter-spacing: .06em }
+.arda { font: 500 9.5px/1 var(--mono); letter-spacing: .08em; padding: 2px 4px; background: var(--chalk); color: var(--plate-ink); margin-left: 5px; vertical-align: 1px }
+.over { color: var(--alert) }
+.faint { color: var(--faint) }
+
+/* ===== table view ===== */
+.board { padding-block: 18px 34px; display: grid; gap: 22px }
+.group { min-width: 0 }
+.ghead { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 0 0 8px; cursor: pointer; user-select: none }
+.ghead .caret { font: 500 14px/1 var(--mono); color: var(--muted); transition: transform .15s; display: inline-block; width: 12px }
+.group.collapsed .caret { transform: rotate(-90deg) }
+.ghead h2 { font-size: 26px; font-weight: 800; line-height: 1 }
+.ghead .gstripe { width: 6px; height: 22px; transform: skewX(var(--slant)); background: var(--chalk) }
+.ghead .gm { font: 500 12px/1 var(--mono); color: color-mix(in srgb, var(--chalk) 55%, transparent) }
+.battery { display: flex; height: 8px; width: 160px; gap: 2px; transform: skewX(var(--slant)) }
+.battery i { height: 100% }
+.tbl { overflow-x: auto; background: var(--tile) }
+.group.collapsed .tbl, .group.collapsed .gfoot { display: none }
+table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1040px; font-size: 14px }
+th { font: 500 11px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 55%, transparent); text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); background: var(--ground); white-space: nowrap }
+td.mono { white-space: nowrap }
+td { padding: 0 10px; height: 40px; border-bottom: 1px solid color-mix(in srgb, var(--chalk) 7%, transparent); vertical-align: middle }
+td.stc { padding: 0; width: 148px; border-left: 2px solid var(--tile); border-right: 2px solid var(--tile) }
+td.stc .st { height: 40px }
+tr.step td:first-child { box-shadow: inset 4px 0 0 var(--gc, var(--chalk)) }
+.iname { display: flex; gap: 10px; align-items: center; min-width: 0 }
+.iname .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.iname .cnt { font: 500 11px/1 var(--mono); padding: 3px 6px; background: var(--tile-3); color: var(--chalk); white-space: nowrap; cursor: pointer; border: 0 }
+.iname .cnt.has { background: var(--chalk); color: var(--plate-ink) }
+tr.sub td { background: color-mix(in srgb, var(--ground) 55%, var(--tile)); height: 38px }
+tr.sub td:first-child { padding-left: 34px; box-shadow: inset 4px 0 0 var(--gc, var(--chalk)) }
+tr.sub .iname .nm { font-weight: 500 }
+tr.sub .lnk { font: 400 13px/1 var(--mono); color: var(--faint) }
+tr.sub { cursor: pointer }
+tr.sub:hover td { background: var(--tile-2) }
+tr.det td { background: var(--ground); padding: 12px 14px 14px 34px; height: auto; box-shadow: inset 4px 0 0 var(--gc, var(--chalk)) }
+.detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 24px; max-width: 980px }
+.detail .k { font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 50%, transparent); display: block; margin-bottom: 4px }
+.detail ol { margin: 0; padding-left: 18px }
+.detail .send { font: 400 13px/1.5 var(--mono); border-left: 2px solid var(--chalk); padding-left: 10px }
+.opts { display: flex; flex-wrap: wrap; gap: 6px }
+.opt { font: 500 12px/1 var(--mono); padding: 6px 9px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chalk) 30%, transparent) }
+.tl { position: relative; height: 8px; background: var(--tile-3); width: 120px; transform: skewX(var(--slant)) }
+.tl i { position: absolute; top: 0; bottom: 0; background: var(--chalk) }
+.tl i.over { background: var(--alert) }
+.tl b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--work) }
+.blk { font: 400 12.5px/1.3 var(--mono); color: var(--alert); white-space: nowrap }
+.gfoot td { height: 34px; background: var(--ground); font: 400 12px/1 var(--mono); color: var(--faint); border-bottom: 0 }
+.gfoot .battery { width: 100%; height: 10px }
+tr.done-row td { color: var(--faint) }
+tr.err td { color: var(--alert); font: 400 12.5px/1.4 var(--mono); height: auto; padding-block: 10px }
+.closed-line { font: 400 12.5px/1.5 var(--mono); color: var(--faint); display: flex; gap: 10px; align-items: center; flex-wrap: wrap }
+
+/* ===== kanban ===== */
+.kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 1fr); gap: 10px; overflow-x: auto; padding-block: 18px 34px }
+.kcol { background: var(--ground); min-width: 0; display: flex; flex-direction: column }
+.kcol > header { display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 40px; font: 700 14px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--plate-ink) }
+.kcol > header .n { font: 500 12px/1 var(--mono); margin-left: auto }
+.kcol.todo > header { color: var(--chalk) }
+.klist { padding: 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start }
+.kcard { background: var(--tile); padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; box-shadow: inset 3px 0 0 var(--gc, var(--chalk)) }
+.kcard .t { font-weight: 600; line-height: 1.3 }
+.kcard .r { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font: 400 12px/1.2 var(--mono); color: color-mix(in srgb, var(--chalk) 60%, transparent) }
+.kcard .r .sp { margin-left: auto }
+.kcard .ask { display: flex; gap: 8px; align-items: center; font-size: 13px; border-top: 1px solid var(--line); padding-top: 7px }
+.kcard .ask span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.kmore { font: 400 12px/1 var(--mono); color: var(--faint); padding: 4px 2px }
+
+/* ===== timeline ===== */
+.tlwrap { overflow-x: auto; margin-block: 18px 34px; background: var(--tile); position: relative }
+.gantt { position: relative }
+.grow { display: flex; height: 34px; border-bottom: 1px solid color-mix(in srgb, var(--chalk) 6%, transparent) }
+.glab { width: 260px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px; position: sticky; left: 0; background: var(--tile); z-index: 2; min-width: 0; font-size: 13.5px }
+.glab .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.grow.gh .glab { background: var(--ground); font: 800 18px/1 var(--display); text-transform: uppercase; letter-spacing: .03em }
+.grow.gh { background: var(--ground) }
+.grow.hdr { height: 42px; background: var(--ground); position: sticky; top: 0; z-index: 3 }
+.grow.hdr .glab { background: var(--ground); font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint) }
+.days { position: relative; flex: none }
+.dcell { position: absolute; top: 0; bottom: 0; border-left: 1px solid color-mix(in srgb, var(--chalk) 5%, transparent) }
+.dcell.we { background: color-mix(in srgb, var(--ground) 45%, transparent) }
+.dlab { position: absolute; bottom: 6px; font: 500 10.5px/1 var(--mono); color: var(--faint); text-align: center }
+.dlab.mo { top: 6px; bottom: auto; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; text-align: left }
+.dlab.today { color: var(--plate-ink); background: var(--chalk); padding: 2px 3px }
+.gbar { position: absolute; top: 8px; height: 18px; transform: skewX(var(--slant)); display: flex; align-items: center; overflow: hidden }
+.gbar span { transform: skewX(17deg); font: 600 11px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--plate-ink); padding: 0 8px; white-space: nowrap }
+.gbar.todo span { color: var(--chalk) }
+.gbar.over { box-shadow: 0 0 0 2px var(--alert) }
+.todayline { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--chalk); z-index: 1; pointer-events: none }
+.arrows { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: visible }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font: 400 12px/1 var(--mono); color: color-mix(in srgb, var(--chalk) 65%, transparent); align-items: center; padding-top: 14px }
+.legend span { display: inline-flex; gap: 6px; align-items: center }
+
+/* ===== dashboard ===== */
+.dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; padding-block: 18px 34px }
+.w { background: var(--tile); padding: 14px 16px 16px; display: grid; gap: 12px; align-content: start; min-width: 0; grid-column: span 4 }
+.w.s6 { grid-column: span 6 } .w.s8 { grid-column: span 8 } .w.s12 { grid-column: span 12 }
+@media (max-width: 980px) { .w, .w.s6, .w.s8 { grid-column: span 12 } }
+.w h3 { font-size: 18px; font-weight: 700; display: flex; justify-content: space-between; gap: 10px; align-items: baseline }
+.w h3 .mono { font-size: 12px; font-weight: 500; color: var(--faint); letter-spacing: .06em }
+.big { font: 800 56px/0.9 var(--display) }
+.stack { display: flex; height: 22px; gap: 2px; transform: skewX(var(--slant)); margin: 0 6px }
+.stack i { height: 100% }
+.lgd { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px 12px; font: 400 12.5px/1.2 var(--mono) }
+.lgd span { display: flex; gap: 8px; align-items: center }
+.lgd b { margin-left: auto; font-weight: 500 }
+.hbars { display: grid; gap: 7px }
+.hb { display: grid; grid-template-columns: 130px minmax(0, 1fr) 34px; gap: 10px; align-items: center; font: 400 12.5px/1 var(--mono) }
+.hb .lb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.hb .tr { height: 12px; background: var(--tile-3); transform: skewX(var(--slant)); display: flex; gap: 1px }
+.hb .tr i { height: 100% }
+.hb b { text-align: right; font-weight: 500 }
+.lst { display: grid; gap: 0 }
+.li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13.5px }
+.li:first-child { border-top: 0 }
+.li .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.li .mono { font-size: 12px }
+.empty { font: 400 13px/1.5 var(--mono); color: var(--faint) }
+
+/* setup */
+.setup { max-width: 600px; display: grid; gap: 14px; padding-block: 30px }
+.setup h2 { font-size: 34px; font-weight: 800 }
+.setup ol { margin: 0; padding-left: 20px; font: 400 13px/1.7 var(--mono) }
+.field { display: grid; gap: 6px }
+.field label { font: 500 11px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--chalk) 60%, transparent) }
+.field input { font: 400 14px var(--mono); padding: 10px 12px; border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--ground); color: var(--chalk); width: 100%; border-radius: 0 }
+.actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap }
+
+footer .wrap { padding-block: 10px 18px; font: 400 12px/1.6 var(--mono); color: color-mix(in srgb, var(--chalk) 45%, transparent) }
+
+/* v0.4 additions */
+.tok { border: 0; background: transparent; cursor: pointer; padding: 6px 2px }
+.tok:hover { color: var(--chalk) }
+a.openchat, .li a, a.lb { color: var(--chalk); text-underline-offset: 3px; font: 500 12px/1.2 var(--mono) }
+a.lb { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+a.lb:hover { text-decoration: underline }
+.setup .note { border-left: 2px solid var(--alert) }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="mark"><span class="plate"><span>RFP</span></span><small>Realistic Football Project · Board</small></div>
+    <nav class="views" id="views" role="tablist" aria-label="Views">
+      <button class="vtab" role="tab" data-v="dashboard" aria-selected="true"><span>Dashboard</span></button>
+      <button class="vtab" role="tab" data-v="table" aria-selected="false"><span>Table</span></button>
+      <button class="vtab" role="tab" data-v="kanban" aria-selected="false"><span>Kanban</span></button>
+      <button class="vtab" role="tab" data-v="timeline" aria-selected="false"><span>Timeline</span></button>
+    </nav>
+    <button class="tok" id="tok" type="button" title="Token settings" hidden></button>
+    <button class="pbtn" id="refresh" type="button" hidden><span>Refresh</span></button>
+  </div>
+</header>
+
+<section class="hero" id="hero" hidden><div class="wrap">
+  <p class="eyebrow" id="hEyebrow"></p>
+  <div class="score" id="hScore"></div>
+  <p class="meta" id="hMeta"></p>
+  <div class="note" id="hNote"></div>
+</div></section>
+
+<div class="toolbar" id="toolbar" hidden><div class="wrap">
+  <input class="search" id="q" type="search" placeholder="Search steps and asks" aria-label="Search steps and asks">
+  <div class="chips" id="famchips"></div>
+  <div class="chips" id="stchips"></div>
+  <label class="toggle"><input type="checkbox" id="showdone"> Show done</label>
+</div></div>
+
+<main class="wrap" id="main"></main>
+<div class="wrap" id="setupwrap" hidden></div>
+
+<footer><div class="wrap">Read-only. Answer in the chat that asked; tell a chat to change a date or priority and it writes it with your mark (A). Data: your private archive repo, status/chats/*.json. <span id="ver"></span></div></footer>
+<script>
+// RFP Dashboard v0.4 (DASH) — read-only board over status/chats/*.json in the private archive repo.
+// Spec: RFP_Dashboard_Design.md (schema v0.3). No build step, no third-party scripts.
+"use strict";
+const VERSION = "0.4";
+const DEFAULT_REPO = "barlasarda91/RFP-Gamedesign-Filesystem";
+const STATUS_DIR = "status";
+const STALE = 3, DAY = 864e5, MIN_REFRESH_MS = 60e3, AUTO_REFRESH_MS = 5 * 60e3;
+const VIEWS = ["dashboard", "table", "kanban", "timeline"];
+
+// ---------- storage (this browser only) ----------
+const KEY = "rfp_dash_v1";
+function loadCfg() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+function saveCfg(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); return true; } catch (e) { return false; } }
+let cfg = loadCfg();
+let memToken = null; // used when localStorage is unavailable
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const localISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dnum = d => Date.parse(d + "T00:00:00Z") / DAY;
+let NOW = Date.now(), TODAY = localISO(new Date()), T = dnum(TODAY);
+const fmt = d => { const x = new Date(d + "T00:00:00Z"); return x.getUTCDate() + " " + x.toLocaleString("en", { month: "short", timeZone: "UTC" }); };
+function ago(iso) { const m = (NOW - Date.parse(iso)) / 6e4; if (m < 60) return Math.max(1, Math.round(m)) + " min"; if (m < 1440) return Math.round(m / 60) + " h"; return Math.floor(m / 1440) + " d"; }
+const ageD = iso => (NOW - Date.parse(iso)) / DAY;
+const famOf = t => String(t).split("-")[0];
+const subOf = t => { const i = String(t).indexOf("-"); return i < 0 ? "" : t.slice(i + 1); };
+const tagHtml = t => { const s = subOf(t); return `<span class="tag"><span>${s ? `<span class="pfx">${esc(famOf(t))}-</span>${esc(s)}` : esc(t)}</span></span>`; };
+const sk = (cls, txt) => `<span class="${cls}"><span>${txt}</span></span>`;
+const ST = { stuck: "Blocked", wait: "Waiting on you", work: "Working", todo: "To do", done: "Done" };
+const ST_ORDER = ["stuck", "wait", "work", "todo", "done"];
+const PR = { 3: "High", 2: "Med", 1: "Low" };
+const prio = p => `<span class="prio p${p}"><i></i><i></i><i></i><b>${PR[p] || "—"}</b></span>`;
+const GC_FIXED = { REGEN: "#7FB2E0", ACADEMY: "#7FB77E", DASH: "#F2EFE4", MENU: "#C9A0DC", ECON: "#E0B04A", INJURY: "#E2554B", CORE: "#9A978C", HOUSE: "#B9B4A4" };
+const GC_POOL = ["#7FB2E0", "#7FB77E", "#C9A0DC", "#E0B04A", "#E28F6B", "#8FD1C4", "#D6D07A", "#B9B4A4"];
+const gc = f => GC_FIXED[f] || GC_POOL[[...f].reduce((s, c) => s + c.charCodeAt(0), 0) % GC_POOL.length];
+const chatLink = (c, label) => c && c.chat_url ? `<a class="openchat" href="${esc(c.chat_url)}" target="_blank" rel="noopener">${label || "Open chat"} ↗</a>` : "";
+
+// ---------- validation (mirror of status_check.py, enough to render safely) ----------
+const TAG_RE = /^[A-Z][A-Z0-9]*(-[A-Z][A-Z0-9]*)*$/, SID = /^s[1-9][0-9]*$/, DATE = /^\d{4}-\d{2}-\d{2}$/, DT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+function validate(d, stem) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["top level must be an object"];
+  if (typeof d.tag !== "string" || !TAG_RE.test(d.tag)) e.push("tag: missing or not TAG / TAG-SUB");
+  else if (d.tag !== stem) e.push(`tag: "${d.tag}" does not match the file name ${stem}.json`);
+  if (typeof d.chat !== "string" || !d.chat.trim()) e.push("chat: missing");
+  if (!DT.test(d.updated || "")) e.push("updated: not UTC YYYY-MM-DDTHH:MM:SSZ");
+  if (d.status && !["active", "closed"].includes(d.status)) e.push(`status: "${d.status}" is not active or closed`);
+  const st = d.deliverable && d.deliverable.steps;
+  if (!d.deliverable || typeof d.deliverable.target !== "string") e.push("deliverable.target: missing");
+  const ids = new Set();
+  if (!Array.isArray(st) || !st.length) e.push("deliverable.steps: missing or empty");
+  else st.forEach((s, n) => {
+    const w = `deliverable.steps[${n}]`;
+    if (!s || typeof s !== "object") { e.push(`${w}: not an object`); return; }
+    if (!SID.test(s.id || "") || ids.has(s.id)) e.push(`${w}.id: missing, bad or used twice`); else ids.add(s.id);
+    if (typeof s.name !== "string" || !s.name.trim()) e.push(`${w}.name: missing`);
+    if (!["done", "doing", "todo"].includes(s.state)) e.push(`${w}.state: "${s.state}" is not done, doing or todo`);
+    if (!DATE.test(s.start || "") || !DATE.test(s.due || "")) e.push(`${w}: start / due not YYYY-MM-DD`);
+    else if (s.start > s.due) e.push(`${w}: start is after due`);
+    if (![1, 2, 3].includes(s.prio)) e.push(`${w}.prio: must be 1, 2 or 3`);
+  });
+  if (!Array.isArray(d.items)) e.push("items: missing (use [])");
+  else d.items.forEach((i, n) => {
+    const w = `items[${n}]`;
+    if (!i || typeof i !== "object") { e.push(`${w}: not an object`); return; }
+    if (typeof i.id !== "string" || !i.id.startsWith((d.tag || "") + "-")) e.push(`${w}.id: missing or not ${d.tag}-NNNN`);
+    if (!ids.has(i.step)) e.push(`${w}.step: "${i.step}" is not a step id in this file`);
+    if (!["test", "decision", "approval"].includes(i.kind)) e.push(`${w}.kind: "${i.kind}" is not test, decision or approval`);
+    if (typeof i.title !== "string") e.push(`${w}.title: missing`);
+    if (!DT.test(i.created || "")) e.push(`${w}.created: not UTC YYYY-MM-DDTHH:MM:SSZ`);
+    if (!["open", "closed"].includes(i.state)) e.push(`${w}.state: must be open or closed`);
+    for (const k of ["steps", "options"]) if (i[k] !== undefined && !Array.isArray(i[k])) e.push(`${w}.${k}: must be a list`);
+  });
+  if (!Array.isArray(d.blockers)) e.push("blockers: missing (use [])");
+  else d.blockers.forEach((b, n) => {
+    const w = `blockers[${n}]`;
+    if (!b || typeof b !== "object") { e.push(`${w}: not an object`); return; }
+    if (!ids.has(b.step)) e.push(`${w}.step: "${b.step}" is not a step id in this file`);
+    if (!TAG_RE.test(b.to || "")) e.push(`${w}.to: missing or not a TAG`);
+    if (b.to_step != null && !SID.test(b.to_step)) e.push(`${w}.to_step: must be null or sN`);
+    if (!DATE.test(b.since || "")) e.push(`${w}.since: not YYYY-MM-DD`);
+    if (!["open", "closed"].includes(b.state)) e.push(`${w}.state: must be open or closed`);
+  });
+  return e;
+}
+
+// ---------- data loading (GitHub REST, contents API) ----------
+const API = "https://api.github.com";
+class LoadError extends Error { constructor(kind, msg) { super(msg); this.kind = kind; } }
+function token() { return cfg.token || memToken; }
+async function gh(path, raw) {
+  const r = await fetch(`${API}/repos/${cfg.repo || DEFAULT_REPO}/contents/${path}`, {
+    headers: { Authorization: `Bearer ${token()}`, Accept: raw ? "application/vnd.github.raw+json" : "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+    cache: "no-store"
+  });
+  if (r.status === 401) throw new LoadError("auth", "GitHub refused the token (401): it has expired or was revoked.");
+  if (r.status === 403 || r.status === 429) {
+    const left = r.headers.get("x-ratelimit-remaining");
+    throw new LoadError("rate", left === "0" ? "GitHub rate limit reached. Try again in a few minutes." : "GitHub refused access (403). Check that the token can read this repo (Contents: read-only).");
+  }
+  if (r.status === 404) return null;
+  if (!r.ok) throw new LoadError("net", `GitHub answered ${r.status}.`);
+  return raw ? r.text() : r.json();
+}
+async function loadAll() {
+  const list = await gh(`${STATUS_DIR}/chats`, false);
+  if (list === null) {
+    const root = await gh(STATUS_DIR, false);
+    if (root === null) throw new LoadError("missing", `No ${STATUS_DIR}/ folder found in ${cfg.repo || DEFAULT_REPO}, or the token cannot see the repo.`);
+  }
+  const files = (Array.isArray(list) ? list : []).filter(f => f.type === "file" && f.name.endsWith(".json"));
+  const [rosterTxt, ...texts] = await Promise.all([gh(`${STATUS_DIR}/roster.json`, true), ...files.map(f => gh(f.path, true))]);
+  const chats = [], bad = [];
+  files.forEach((f, n) => {
+    const stem = f.name.replace(/\.json$/, ""), path = `${STATUS_DIR}/chats/${f.name}`;
+    let d = null;
+    try { d = JSON.parse(String(texts[n] || "").replace(/^﻿/, "")); } catch (e) { bad.push({ tag: stem, file: path, errors: ["not valid JSON: " + e.message] }); return; }
+    const errs = validate(d, stem);
+    if (errs.length) bad.push({ tag: TAG_RE.test(stem) ? stem : "?", file: path, errors: errs });
+    else chats.push(d);
+  });
+  let roster = null;
+  if (rosterTxt) { try { roster = JSON.parse(rosterTxt.replace(/^﻿/, "")); } catch (e) { bad.push({ tag: "ROSTER", file: `${STATUS_DIR}/roster.json`, errors: ["not valid JSON"] }); } }
+  return { chats, bad, roster, files: files.length, at: Date.now() };
+}
+
+// ---------- model ----------
+let DATA = null, M = null;
+function buildModel(D) {
+  const live = D.chats.filter(c => c.status !== "closed"), closed = D.chats.filter(c => c.status === "closed");
+  const rows = [];
+  for (const c of live) for (const s of c.deliverable.steps) {
+    const items = c.items.filter(i => i.state === "open" && i.step === s.id);
+    const blockers = c.blockers.filter(b => b.state === "open" && b.step === s.id);
+    const status = s.state === "done" ? "done" : blockers.length ? "stuck" : items.length ? "wait" : s.state === "doing" ? "work" : "todo";
+    rows.push({ c, s, fam: famOf(c.tag), key: c.tag + "/" + s.id, items, blockers, status, overdue: s.state !== "done" && dnum(s.due) < T });
+  }
+  const have = new Set(D.chats.map(c => c.tag).concat(D.bad.map(b => b.tag)));
+  const missing = new Map();
+  for (const r of (D.roster && Array.isArray(D.roster.chats) ? D.roster.chats : [])) if (r && r.expect_file && !have.has(r.tag)) missing.set(r.tag, { tag: r.tag, why: `In Registry §0 (${r.status || "listed"}), no status file yet`, chat: r.chat });
+  for (const r of rows) for (const b of r.blockers) if (!have.has(b.to)) {
+    const ex = missing.get(b.to); const why = `Named in a blocker by ${r.c.tag}, no status file yet`;
+    missing.set(b.to, ex ? Object.assign(ex, { blocker: true }) : { tag: b.to, why, blocker: true });
+  }
+  const quiet = live.filter(c => ageD(c.updated) > STALE);
+  return { live, closed, rows, byKey: new Map(rows.map(r => [r.key, r])), missing: [...missing.values()].sort((a, b) => a.tag.localeCompare(b.tag)), quiet };
+}
+
+// ---------- UI state ----------
+const initialView = () => { const h = location.hash.slice(1); return VIEWS.includes(h) ? h : "dashboard"; };
+let state = { view: initialView(), q: "", fam: null, st: null, showDone: false, open: new Set(), collapsed: new Set(), screen: "board", error: null, loading: false };
+try { const u = JSON.parse(localStorage.getItem(KEY + "_ui") || "{}"); if (u.collapsed) state.collapsed = new Set(u.collapsed); if (u.showDone) state.showDone = true; } catch (e) {}
+function saveUi() { try { localStorage.setItem(KEY + "_ui", JSON.stringify({ collapsed: [...state.collapsed], showDone: state.showDone })); } catch (e) {} }
+
+function visible() {
+  const q = state.q.trim().toLowerCase();
+  return M.rows.filter(r => (state.showDone || r.status !== "done" || state.view === "timeline" || state.view === "dashboard")
+    && (!state.fam || r.fam === state.fam) && (!state.st || r.status === state.st)
+    && (!q || (r.s.name + " " + r.c.tag + " " + r.c.chat + " " + r.items.map(i => i.title).join(" ")).toLowerCase().includes(q)));
+}
+function groups(list) {
+  const m = new Map();
+  for (const r of list) { if (!m.has(r.fam)) m.set(r.fam, []); m.get(r.fam).push(r); }
+  const weight = l => l.reduce((s, r) => s + r.items.length * 10 + r.blockers.length * 5, 0);
+  return [...m.entries()].map(([fam, l]) => ({ fam, rows: l })).sort((a, b) => weight(b.rows) - weight(a.rows) || a.fam.localeCompare(b.fam));
+}
+const battery = l => { const n = l.length || 1; return `<span class="battery">${ST_ORDER.map(k => { const c = l.filter(r => r.status === k).length; return c ? `<i class="dot ${k}" style="width:${100 * c / n}%;transform:none" title="${ST[k]}: ${c}"></i>` : ""; }).join("")}</span>`; };
+
+// ---------- hero + toolbar ----------
+function tokenState() {
+  if (!cfg.exp) return { cls: "", text: "Token set" };
+  const left = Math.ceil((Date.parse(cfg.exp + "T23:59:59") - Date.now()) / DAY);
+  if (left < 0) return { cls: "warn", text: "Token expired", left };
+  if (left <= 7) return { cls: "warn", text: `Token · expires in ${left} d`, left };
+  return { cls: "", text: `Token · expires ${fmt(cfg.exp)} ${cfg.exp.slice(0, 4)}`, left };
+}
+function renderHero() {
+  const rows = M.rows, asks = rows.flatMap(r => r.items), bl = rows.flatMap(r => r.blockers);
+  const staleBl = bl.filter(b => ageD(b.since + "T00:00:00Z") > STALE).length, over = rows.filter(r => r.overdue).length;
+  const dueWeek = rows.filter(r => r.status !== "done" && dnum(r.s.due) >= T && dnum(r.s.due) <= T + 6).length;
+  const when = new Date(DATA.at);
+  $("hEyebrow").textContent = `Status · ${when.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · loaded ${pad(when.getHours())}:${pad(when.getMinutes())} · ${DATA.files} status file${DATA.files === 1 ? "" : "s"}`;
+  $("hScore").innerHTML = `<span class="plate"><span>${asks.length}</span></span><span>Waiting on you</span>` +
+    `<span class="dim"><b class="${staleBl ? "alert" : ""}">${bl.length}</b> Blocked</span><span class="dim"><b class="${over ? "alert" : ""}">${over}</b> Overdue</span><span class="dim"><b>${dueWeek}</b> Due this week</span>`;
+  $("hMeta").textContent = `${M.live.length} active chat${M.live.length === 1 ? "" : "s"} · ${rows.length} steps · ${rows.filter(r => r.status === "done").length} done · ${staleBl} blocker${staleBl === 1 ? "" : "s"} older than ${STALE} days · ${M.quiet.length} quiet · ${M.closed.length} closed · ${M.missing.length} missing · ${DATA.bad.length} file error${DATA.bad.length === 1 ? "" : "s"}`;
+  const n = $("hNote"), tk = tokenState();
+  n.className = "note";
+  if (state.error) { n.className = "note warn"; n.innerHTML = `<span>${esc(state.error)} Showing the data loaded at ${pad(when.getHours())}:${pad(when.getMinutes())}.</span>`; }
+  else if (tk.cls) { n.className = "note warn"; n.innerHTML = `<span>${tk.left < 0 ? "Your GitHub token has expired." : `Your GitHub token expires on ${fmt(cfg.exp)}.`} Make a new fine-grained token (only ${esc((cfg.repo || DEFAULT_REPO).split("/")[1])}, Contents: read-only, 90 days) and paste it.</span><button class="pbtn" type="button" data-go="setup"><span>Replace token</span></button>`; }
+  else n.innerHTML = `<span>Read-only. Groups are chat families; rows are each chat's deliverable steps; what a chat asks you hangs under the step it belongs to. Answer in the chat that asked.</span>`;
+}
+function renderToolbar() {
+  const fams = [...new Set(M.rows.map(r => r.fam))].sort();
+  const cnt = f => M.rows.filter(r => r.fam === f).reduce((s, r) => s + r.items.length, 0);
+  $("famchips").innerHTML = `<span class="l">Group</span><button class="chip" data-fam="" aria-pressed="${!state.fam}"><span>All</span></button>` +
+    fams.map(f => `<button class="chip" data-fam="${esc(f)}" aria-pressed="${state.fam === f}"><span>${esc(f)}${cnt(f) ? `<span class="n">${cnt(f)}</span>` : ""}</span></button>`).join("");
+  $("stchips").innerHTML = `<span class="l">Status</span>` + ST_ORDER.filter(k => k !== "done").map(k => `<button class="chip" data-st="${k}" aria-pressed="${state.st === k}"><span><i class="dot ${k}"></i> ${ST[k]}<span class="n">${M.rows.filter(r => r.status === k).length}</span></span></button>`).join("");
+  $("showdone").checked = state.showDone;
+}
+
+// ---------- table ----------
+function askDetail(r, i) {
+  return `<div class="detail">
+    <div><span class="k">What</span>${esc(i.detail || "—")}</div>
+    ${i.steps && i.steps.length ? `<div><span class="k">Steps</span><ol>${i.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>` : ""}
+    ${i.options && i.options.length ? `<div><span class="k">Options</span><div class="opts">${i.options.map(o => `<span class="opt">${esc(o)}</span>`).join("")}</div></div>` : ""}
+    <div><span class="k">Send back · answer in ${esc(r.c.chat)}</span><p class="send">${esc(i.send_back || "—")}</p>${chatLink(r.c) ? `<p style="margin-top:8px">${chatLink(r.c)}</p>` : ""}</div></div>`;
+}
+function stepRow(r) {
+  const s = r.s, dur = Math.max(1, dnum(s.due) - dnum(s.start) + 1), el = Math.min(dur, Math.max(0, T - dnum(s.start) + 1));
+  const blk = r.blockers.map(b => `${b.to}${b.to_step ? "·" + b.to_step : ""}`).join(", ");
+  const asks = r.items.length, g = gc(r.fam);
+  return `<tr class="step ${r.status === "done" ? "done-row" : ""}" style="--gc:${g}">
+    <td><div class="iname"><span class="nm" title="${esc(s.name)}">${esc(s.name)}</span>${asks ? `<button class="cnt has" type="button" data-tog="${esc(r.key)}">${asks} ask${asks > 1 ? "s" : ""}</button>` : ""}</div></td>
+    <td>${tagHtml(r.c.tag)}</td>
+    <td class="stc"><div class="st st-${r.status}">${ST[r.status]}</div></td>
+    <td>${prio(s.prio)}</td>
+    <td><div class="tl" title="${fmt(s.start)} → ${fmt(s.due)}"><i class="${r.overdue ? "over" : ""}" style="left:0;width:${r.status === "done" ? 100 : 100 * el / dur}%"></i></div></td>
+    <td class="mono ${r.overdue ? "over" : ""}">${fmt(s.due)}${s.due_by === "arda" ? '<span class="arda" title="Date set by you">A</span>' : ""}</td>
+    <td>${blk ? `<span class="blk">⛓ ${esc(blk)}</span>` : '<span class="faint">—</span>'}</td>
+  </tr>` + r.items.map(i => {
+    const k = "x" + i.id, open = state.open.has(k), old = ageD(i.created) > STALE;
+    return `<tr class="sub" style="--gc:${g}" data-tog="${esc(k)}" tabindex="0" aria-expanded="${open}"><td><div class="iname"><span class="lnk">└</span>${sk("kind " + i.kind, i.kind)}<span class="nm" title="${esc(i.title)}">${esc(i.title)}</span></div></td>
+      <td class="mono" style="font-size:12px">→ you</td><td class="stc"><div class="st st-wait">Open · ${ago(i.created)}</div></td><td></td><td></td>
+      <td class="mono ${old ? "over" : "faint"}" style="font-size:12px">${old ? "waiting " + Math.floor(ageD(i.created)) + " d" : "asked " + ago(i.created) + " ago"}</td><td class="mono faint" style="font-size:12px">${esc(i.id)}</td></tr>` +
+      (open ? `<tr class="det" style="--gc:${g}"><td colspan="7">${askDetail(r, i)}</td></tr>` : "");
+  }).join("");
+}
+function filesFooter() {
+  let h = "";
+  if (!state.fam || M.closed.some(c => famOf(c.tag) === state.fam)) h += M.closed.filter(c => !state.fam || famOf(c.tag) === state.fam).map(c => `<p class="closed-line">${tagHtml(c.tag)}<span>Closed · ${esc(c.closed_note || "")} · ${ago(c.updated)} ago</span></p>`).join("");
+  h += DATA.bad.map(c => `<p class="closed-line" style="color:var(--alert)">${tagHtml(c.tag)}<span>File error in ${esc(c.file)}: ${c.errors.slice(0, 4).map(esc).join("; ")}${c.errors.length > 4 ? ` (+${c.errors.length - 4} more)` : ""}. The chat fixes it with status_check.py.</span></p>`).join("");
+  return h;
+}
+function viewTable() {
+  const gs = groups(visible());
+  let h = `<div class="board">`;
+  for (const g of gs) {
+    const all = M.rows.filter(r => r.fam === g.fam), done = all.filter(r => r.status === "done").length;
+    const tags = [...new Set(all.map(r => r.c.tag))];
+    const hiddenDone = state.showDone ? 0 : all.filter(r => r.status === "done").length;
+    const coll = state.collapsed.has(g.fam);
+    h += `<section class="group ${coll ? "collapsed" : ""}">
+      <div class="ghead" data-gtog="${esc(g.fam)}" role="button" tabindex="0" aria-expanded="${!coll}"><span class="caret">▾</span><span class="gstripe" style="background:${gc(g.fam)}"></span><h2>${esc(g.fam)}</h2>
+        <span class="gm">${tags.length} chat${tags.length > 1 ? "s" : ""} · ${done}/${all.length} steps done</span>${battery(all)}</div>
+      <div class="tbl"><table><tr><th style="width:38%">Step</th><th>Owner</th><th style="text-align:center">Status</th><th>Priority</th><th>Timeline</th><th>Due</th><th>Blocked by</th></tr>
+      ${g.rows.sort((a, b) => ST_ORDER.indexOf(a.status) - ST_ORDER.indexOf(b.status) || dnum(a.s.due) - dnum(b.s.due)).map(stepRow).join("")}
+      <tr class="gfoot"><td>${hiddenDone && !state.st ? `${hiddenDone} done step${hiddenDone > 1 ? "s" : ""} hidden` : ""}</td><td></td><td>${battery(g.rows)}</td><td></td><td></td><td></td><td></td></tr>
+      </table></div></section>`;
+  }
+  if (!gs.length) h += `<p class="empty">${M.rows.length ? "No steps match." : "No chat status files yet. Each chat creates status/chats/&lt;TAG&gt;.json in its first reply."}</p>`;
+  return h + filesFooter() + `</div>`;
+}
+
+// ---------- kanban ----------
+function viewKanban() {
+  const vis = visible().filter(r => state.showDone || r.status !== "done");
+  const cols = ST_ORDER.filter(k => k !== "done" || state.showDone);
+  return `<div class="kanban">` + cols.map(k => {
+    const l = vis.filter(r => r.status === k).sort((a, b) => b.s.prio - a.s.prio || dnum(a.s.due) - dnum(b.s.due));
+    return `<section class="kcol ${k}"><header class="st-${k}"><span>${ST[k]}</span><span class="n">${l.length}</span></header><div class="klist">` +
+      (l.length ? l.map(r => `<article class="kcard" style="--gc:${gc(r.fam)}">
+        <div class="r">${tagHtml(r.c.tag)}<span class="sp">${prio(r.s.prio)}</span></div>
+        <p class="t">${esc(r.s.name)}</p>
+        <div class="r"><span class="${r.overdue ? "over" : ""}">Due ${fmt(r.s.due)}${r.s.due_by === "arda" ? '<span class="arda">A</span>' : ""}</span>${r.blockers.length ? `<span class="blk sp">⛓ ${esc(r.blockers.map(b => b.to).join(", "))}</span>` : ""}</div>
+        ${r.items.map(i => `<div class="ask">${sk("kind " + i.kind, i.kind)}<span title="${esc(i.title)}">${esc(i.title)}</span></div>`).join("")}
+        ${r.items.length && r.c.chat_url ? `<div class="r">${chatLink(r.c)}</div>` : ""}
+      </article>`).join("") : `<p class="kmore">Nothing here.</p>`) + `</div></section>`;
+  }).join("") + `</div>`;
+}
+
+// ---------- timeline ----------
+function viewTimeline() {
+  const vis = visible();
+  const gs = groups(vis);
+  if (!gs.length) return `<p class="empty" style="padding:24px 0">No steps match.</p>`;
+  const d0 = Math.min(T, ...vis.map(r => dnum(r.s.start))) - 1, d1 = Math.max(T, ...vis.map(r => dnum(r.s.due))) + 2;
+  const DW = 34, LW = 260, RH = 34, HH = 42, nd = Math.min(d1 - d0, 400), W = nd * DW;
+  const x = d => (d - d0) * DW;
+  const day = i => { const dt = new Date((d0 + i) * DAY); return { d: dt.getUTCDate(), wd: dt.getUTCDay(), mo: dt.toLocaleString("en", { month: "short", timeZone: "UTC" }) }; };
+  let cells = ""; for (let i = 0; i < nd; i++) { const dd = day(i); cells += `<div class="dcell${dd.wd === 0 || dd.wd === 6 ? " we" : ""}" style="left:${i * DW}px;width:${DW}px"></div>`; }
+  let hdr = ""; for (let i = 0; i < nd; i++) { const dd = day(i);
+    if (i === 0 || dd.d === 1) hdr += `<span class="dlab mo" style="left:${i * DW + 4}px">${dd.mo}</span>`;
+    hdr += `<span class="dlab${d0 + i === T ? " today" : ""}" style="left:${i * DW}px;width:${DW}px">${dd.d}</span>`; }
+  let h = `<div class="tlwrap"><div class="gantt" style="width:${LW + W}px">`;
+  h += `<div class="grow hdr"><div class="glab">Step</div><div class="days" style="width:${W}px">${cells}${hdr}</div></div>`;
+  const pos = new Map(); let y = HH;
+  const bgs = { done: "var(--ok)", work: "var(--work)", wait: "var(--chalk)", stuck: "var(--alert)", todo: "var(--tile-3)" };
+  for (const g of gs) {
+    h += `<div class="grow gh"><div class="glab"><span style="width:6px;height:18px;transform:skewX(var(--slant));background:${gc(g.fam)};display:inline-block"></span>${esc(g.fam)}</div><div class="days" style="width:${W}px">${cells}</div></div>`; y += RH;
+    for (const r of g.rows.slice().sort((a, b) => a.c.tag.localeCompare(b.c.tag) || dnum(a.s.start) - dnum(b.s.start))) {
+      const s = r.s, bx = x(dnum(s.start)), bw = (dnum(s.due) - dnum(s.start) + 1) * DW;
+      pos.set(r.key, { x0: LW + bx, x1: LW + bx + bw, y: y + RH / 2 });
+      h += `<div class="grow"><div class="glab">${tagHtml(r.c.tag)}<span class="nm" title="${esc(s.name)}">${esc(s.name)}</span></div>
+        <div class="days" style="width:${W}px">${cells}<div class="gbar ${r.status === "todo" ? "todo" : ""} ${r.overdue ? "over" : ""}" style="left:${bx + 3}px;width:${Math.max(8, bw - 6)}px;background:${bgs[r.status]}" title="${esc(s.name)} · ${fmt(s.start)} → ${fmt(s.due)} · ${ST[r.status]}"><span>${r.items.length ? "● " : ""}${esc(s.name)}</span></div></div></div>`;
+      y += RH;
+    }
+  }
+  let arrows = "";
+  for (const r of vis) for (const b of r.blockers) {
+    const to = pos.get(r.key), from = b.to_step ? pos.get(b.to + "/" + b.to_step) : null;
+    if (!to) continue;
+    if (from) {
+      const sx = from.x1, sy = from.y, ex = to.x0, ey = to.y, mx = Math.max(sx + 16, ex - 16);
+      arrows += `<path d="M${sx} ${sy} C ${mx} ${sy}, ${Math.min(mx, ex - 10)} ${ey}, ${ex - 2} ${ey}" fill="none" stroke="var(--alert)" stroke-width="1.6" stroke-dasharray="4 3"/><path d="M${ex - 8} ${ey - 4} L${ex - 1} ${ey} L${ex - 8} ${ey + 4}" fill="var(--alert)"/>`;
+    } else {
+      const known = M.live.some(c => c.tag === b.to);
+      arrows += `<text x="${to.x0 - 6}" y="${to.y + 4}" text-anchor="end" font-family="IBM Plex Mono, Consolas, monospace" font-size="11" fill="var(--alert)">⛓ ${esc(b.to)}${known ? "" : " (no status file)"}</text>`;
+    }
+  }
+  h += `<div class="todayline" style="left:${LW + x(T) + DW / 2}px"></div><svg class="arrows" width="${LW + W}" height="${y}">${arrows}</svg></div></div>`;
+  h += `<div class="legend">${ST_ORDER.map(k => `<span><i class="dot ${k}"></i>${ST[k]}</span>`).join("")}<span><svg width="28" height="8" aria-hidden="true"><path d="M0 4 H22" stroke="var(--alert)" stroke-width="1.6" stroke-dasharray="4 3"/><path d="M20 0 L27 4 L20 8" fill="var(--alert)"/></svg>waits on (Registry §2)</span><span>● = asks you</span><span><span class="arda">A</span> date set by you</span></div>`;
+  return h;
+}
+
+// ---------- dashboard ----------
+function viewDash() {
+  const vis = visible();
+  const asks = vis.flatMap(r => r.items.map(i => ({ r, i })));
+  const over = vis.filter(r => r.overdue).sort((a, b) => dnum(a.s.due) - dnum(b.s.due));
+  const week = vis.filter(r => r.status !== "done" && dnum(r.s.due) >= T && dnum(r.s.due) <= T + 6).sort((a, b) => dnum(a.s.due) - dnum(b.s.due));
+  const bl = vis.flatMap(r => r.blockers.map(b => ({ r, b }))).sort((a, b) => a.b.since.localeCompare(b.b.since));
+  const n = vis.length || 1;
+  const stack = ST_ORDER.map(k => { const c = vis.filter(r => r.status === k).length; return c ? `<i class="dot ${k}" style="width:${100 * c / n}%;transform:none"></i>` : ""; }).join("");
+  const byChat = [...new Set(vis.map(r => r.c.tag))].map(t => ({ t, c: vis.find(r => r.c.tag === t).c, l: vis.filter(r => r.c.tag === t) }));
+  const askChat = byChat.map(x => ({ t: x.t, c: x.c, n: x.l.reduce((s, r) => s + r.items.length, 0), old: x.l.reduce((s, r) => s + r.items.filter(i => ageD(i.created) > STALE).length, 0) })).filter(x => x.n).sort((a, b) => b.n - a.n);
+  const mx = Math.max(1, ...askChat.map(x => x.n));
+  const kindN = k => asks.filter(a => a.i.kind === k).length;
+  const oldest = asks.slice().sort((a, b) => Date.parse(a.i.created) - Date.parse(b.i.created)).slice(0, 6);
+  const lbl = c => c.chat_url ? `<a class="lb" href="${esc(c.chat_url)}" target="_blank" rel="noopener">${esc(c.tag)} ↗</a>` : `<span class="lb">${esc(c.tag)}</span>`;
+  const filesRows = DATA.bad.map(c => `<div class="li">${tagHtml(c.tag)}<span class="nm" style="color:var(--alert)">${c.errors.slice(0, 3).map(esc).join(" · ")}</span><span class="mono over">error</span></div>`).join("")
+    + M.missing.map(m => `<div class="li">${tagHtml(m.tag)}<span class="nm faint">${esc(m.why)}</span><span class="mono ${m.blocker ? "over" : "faint"}">missing</span></div>`).join("")
+    + M.quiet.map(c => `<div class="li">${tagHtml(c.tag)}<span class="nm faint">No update for ${Math.floor(ageD(c.updated))} days</span><span class="mono faint">quiet</span></div>`).join("")
+    + M.closed.map(c => `<div class="li">${tagHtml(c.tag)}<span class="nm faint">${esc(c.closed_note || "")}</span><span class="mono faint">closed</span></div>`).join("");
+  return `<div class="dash">
+    <section class="w"><h3>Waiting on you <span class="mono">asks</span></h3><span class="big">${asks.length}</span>
+      <div class="lgd"><span>${sk("kind approval", "approval")}<b>${kindN("approval")}</b></span><span>${sk("kind test", "test")}<b>${kindN("test")}</b></span><span>${sk("kind decision", "decision")}<b>${kindN("decision")}</b></span></div></section>
+    <section class="w s8"><h3>Steps by status <span class="mono">${vis.length} steps</span></h3>${vis.length ? `<div class="stack">${stack}</div>` : ""}
+      <div class="lgd">${ST_ORDER.map(k => `<span><i class="dot ${k}"></i>${ST[k]}<b>${vis.filter(r => r.status === k).length}</b></span>`).join("")}</div></section>
+    <section class="w s6"><h3>Oldest asks <span class="mono">answer in the chat</span></h3>${oldest.length ? `<div class="lst">${oldest.map(({ r, i }) => `<div class="li">${sk("kind " + i.kind, i.kind)}<span class="nm" title="${esc(i.title)}">${esc(r.c.tag)} · ${esc(i.title)}</span><span class="mono ${ageD(i.created) > STALE ? "over" : ""}">${ago(i.created)}${r.c.chat_url ? ` · <a href="${esc(r.c.chat_url)}" target="_blank" rel="noopener">open ↗</a>` : ""}</span></div>`).join("")}</div>` : `<p class="empty">Nothing is waiting on you.</p>`}</section>
+    <section class="w s6"><h3>Asks per chat <span class="mono">red = older than ${STALE} d</span></h3>${askChat.length ? `<div class="hbars">${askChat.map(x => `<div class="hb">${lbl(x.c)}<span class="tr" style="width:${100 * x.n / mx}%">${x.old ? `<i style="width:${100 * x.old / x.n}%;background:var(--alert)"></i>` : ""}<i style="flex:1;background:var(--chalk)"></i></span><b class="mono">${x.n}</b></div>`).join("")}</div>` : `<p class="empty">No open asks.</p>`}</section>
+    <section class="w s12"><h3>Progress by chat <span class="mono">steps done</span></h3>${byChat.length ? `<div class="hbars">${byChat.map(x => { const t = x.l.length; return `<div class="hb">${lbl(x.c)}<span class="tr">${ST_ORDER.slice().reverse().map(k => { const c = x.l.filter(r => r.status === k).length; return c ? `<i class="dot ${k}" style="width:${100 * c / t}%;transform:none" title="${ST[k]}: ${c}"></i>` : ""; }).join("")}</span><b class="mono">${x.l.filter(r => r.status === "done").length}/${t}</b></div>`; }).join("")}</div>` : `<p class="empty">No chat status files yet.</p>`}</section>
+    <section class="w"><h3>Overdue <span class="mono">${over.length}</span></h3>${over.length ? `<div class="lst">${over.map(r => `<div class="li">${tagHtml(r.c.tag)}<span class="nm" title="${esc(r.s.name)}">${esc(r.s.name)}</span><span class="mono over">${Math.round(T - dnum(r.s.due))} d late</span></div>`).join("")}</div>` : `<p class="empty">Nothing overdue.</p>`}</section>
+    <section class="w"><h3>Due this week <span class="mono">${week.length}</span></h3>${week.length ? `<div class="lst">${week.map(r => `<div class="li"><i class="dot ${r.status}"></i><span class="nm" title="${esc(r.s.name)}">${esc(r.c.tag)} · ${esc(r.s.name)}</span><span class="mono">${fmt(r.s.due)}</span></div>`).join("")}</div>` : `<p class="empty">Nothing due this week.</p>`}</section>
+    <section class="w"><h3>Blockers by age <span class="mono">Registry §2</span></h3>${bl.length ? `<div class="lst">${bl.map(({ r, b }) => { const a = Math.floor(ageD(b.since + "T00:00:00Z")); return `<div class="li">${tagHtml(r.c.tag)}<span class="nm" title="${esc(b.need)}">→ ${esc(b.to)} · ${esc(b.need)}</span><span class="mono ${a > STALE ? "over" : ""}">${a} d</span></div>`; }).join("")}</div>` : `<p class="empty">No open blockers.</p>`}</section>
+    <section class="w s12"><h3>Status files <span class="mono">${esc(STATUS_DIR)}/chats · ${DATA.files} file${DATA.files === 1 ? "" : "s"}</span></h3>${filesRows ? `<div class="lst">${filesRows}</div>` : `<p class="empty">Every expected chat has a valid, recent status file.</p>`}</section>
+  </div>`;
+}
+
+// ---------- setup ----------
+function renderSetup(msg) {
+  const tk = cfg.token || memToken;
+  $("setupwrap").innerHTML = `<form class="setup" id="setupform" autocomplete="off">
+    <div><p class="eyebrow">${tk ? "Token" : "First run"}</p><h2 style="margin-top:8px">Connect the archive repo</h2></div>
+    ${msg ? `<p class="note warn"><span>${esc(msg)}</span></p>` : ""}
+    <p class="meta">The board reads ${esc(STATUS_DIR)}/chats/*.json and ${esc(STATUS_DIR)}/roster.json from your private repo with a GitHub token that can only read that repo.</p>
+    <ol><li>GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token</li><li>Repository access: Only select repositories → RFP-Gamedesign-Filesystem</li><li>Permissions: Contents → Read-only · Expiration: 90 days</li><li>Paste it below with its expiry date</li></ol>
+    <div class="field"><label for="tok-in">Token</label><input id="tok-in" type="password" placeholder="${tk ? "Saved · paste a new one to replace it" : "github_pat_…"}"></div>
+    <div class="field"><label for="exp-in">Expires on (for the 7-day reminder)</label><input id="exp-in" type="date" value="${esc(cfg.exp || "")}"></div>
+    <div class="field"><label for="repo-in">Repository (owner/name)</label><input id="repo-in" type="text" value="${esc(cfg.repo || DEFAULT_REPO)}"></div>
+    <div class="actions"><button class="pbtn solid" type="submit"><span>Save and load</span></button>${tk ? `<button class="pbtn" type="button" id="forget"><span>Forget token</span></button>${DATA ? `<button class="pbtn" type="button" id="cancel"><span>Back to board</span></button>` : ""}` : ""}<span class="meta">Kept in this browser only. Sent only to api.github.com.</span></div>
+  </form>`;
+  $("setupform").addEventListener("submit", e => {
+    e.preventDefault();
+    const t = $("tok-in").value.trim(), ex = $("exp-in").value, rp = $("repo-in").value.trim() || DEFAULT_REPO;
+    if (!t && !tk) { renderSetup("Paste a token first."); return; }
+    if (!/^[\w.-]+\/[\w.-]+$/.test(rp)) { renderSetup("Repository must look like owner/name."); return; }
+    if (t) cfg.token = t;
+    cfg.exp = ex || null; cfg.repo = rp;
+    if (!saveCfg(cfg)) { memToken = cfg.token; }
+    state.screen = "board"; refresh(true);
+  });
+  const f = $("forget"); if (f) f.addEventListener("click", () => { cfg = {}; memToken = null; saveCfg(cfg); DATA = null; M = null; state.screen = "setup"; render(); });
+  const c = $("cancel"); if (c) c.addEventListener("click", () => { state.screen = "board"; render(); });
+}
+
+// ---------- render + refresh ----------
+function render() {
+  const setup = state.screen === "setup";
+  const haveData = !!(DATA && M);
+  $("hero").hidden = setup || !haveData; $("toolbar").hidden = setup || !haveData; $("main").hidden = setup; $("views").hidden = setup || !haveData; $("setupwrap").hidden = !setup;
+  $("refresh").hidden = setup || !token();
+  const tk = tokenState(), te = $("tok");
+  te.hidden = !token(); te.className = "tok " + (tk.cls || ""); te.textContent = tk.text;
+  if (setup) { renderSetup(state.setupMsg); return; }
+  document.querySelectorAll(".vtab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === state.view)));
+  if (!haveData) { $("main").innerHTML = `<p class="empty" style="padding:40px 0">${state.loading ? "Loading status files…" : esc(state.error || "")}</p>`; return; }
+  renderHero(); renderToolbar();
+  $("main").innerHTML = state.view === "table" ? viewTable() : state.view === "kanban" ? viewKanban() : state.view === "timeline" ? viewTimeline() : viewDash();
+}
+let lastLoad = 0, cooldownTimer = null;
+function cooldown() {
+  const b = $("refresh"); clearInterval(cooldownTimer);
+  const tick = () => { const left = Math.ceil((lastLoad + MIN_REFRESH_MS - Date.now()) / 1000);
+    if (left > 0) { b.disabled = true; b.firstElementChild.textContent = `Refresh · ${left}s`; } else { b.disabled = false; b.firstElementChild.textContent = "Refresh"; clearInterval(cooldownTimer); } };
+  tick(); cooldownTimer = setInterval(tick, 1000);
+}
+async function refresh(force) {
+  if (!token()) { state.screen = "setup"; render(); return; }
+  if (!force && Date.now() - lastLoad < MIN_REFRESH_MS) return;
+  if (state.loading) return;
+  state.loading = true; lastLoad = Date.now(); cooldown();
+  if (!DATA) render();
+  try {
+    NOW = Date.now(); TODAY = localISO(new Date()); T = dnum(TODAY);
+    DATA = await loadAll(); M = buildModel(DATA); state.error = null;
+  } catch (e) {
+    const msg = e instanceof LoadError ? e.message : "Could not reach GitHub. Check the connection and refresh.";
+    if (e.kind === "auth" || (!DATA && e.kind === "missing")) { state.loading = false; state.screen = "setup"; state.setupMsg = msg; render(); state.setupMsg = null; return; }
+    state.error = msg;
+  }
+  state.loading = false; render();
+}
+
+// ---------- events ----------
+$("views").addEventListener("click", e => { const b = e.target.closest(".vtab"); if (b) { state.view = b.dataset.v; history.replaceState(null, "", "#" + state.view); render(); } });
+window.addEventListener("hashchange", () => { state.view = initialView(); render(); });
+$("famchips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) { state.fam = b.dataset.fam || null; render(); } });
+$("stchips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) { state.st = state.st === b.dataset.st ? null : b.dataset.st; render(); } });
+$("showdone").addEventListener("change", e => { state.showDone = e.target.checked; saveUi(); render(); });
+$("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+function toggleFrom(el) {
+  const g = el.closest("[data-gtog]"); if (g) { const f = g.dataset.gtog; state.collapsed.has(f) ? state.collapsed.delete(f) : state.collapsed.add(f); saveUi(); render(); return true; }
+  const t = el.closest("[data-tog]"); if (t) { const k = t.dataset.tog;
+    const keys = k.startsWith("x") ? [k] : (M.byKey.get(k)?.items || []).map(i => "x" + i.id);
+    const anyOpen = keys.some(x => state.open.has(x)); keys.forEach(x => anyOpen ? state.open.delete(x) : state.open.add(x)); render(); return true; }
+  return false;
+}
+$("main").addEventListener("click", e => { if (e.target.closest("a")) return; toggleFrom(e.target); });
+$("main").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-gtog],[data-tog]")) { e.preventDefault(); toggleFrom(e.target); } });
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) { state.screen = g.dataset.go; render(); } });
+$("tok").addEventListener("click", () => { state.screen = "setup"; render(); });
+$("refresh").addEventListener("click", () => refresh(false));
+setInterval(() => { if (document.visibilityState === "visible" && state.screen === "board" && token()) refresh(false); }, AUTO_REFRESH_MS);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastLoad > AUTO_REFRESH_MS) refresh(false); });
+$("ver").textContent = `RFP Dashboard v${VERSION} · schema 0.3`;
+
+if (token()) refresh(true); else { state.screen = "setup"; render(); }
+
+</script>
+</body>
+</html>

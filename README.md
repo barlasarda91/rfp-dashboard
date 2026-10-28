@@ -1,0 +1,7 @@
+# RFP Dashboard
+
+Read-only project board for the RFP (Realistic Football Project) mod chats. One static page, no build step, no third-party scripts.
+
+The page holds no project data. It reads `status/chats/*.json` and `status/roster.json` from a private repository through the GitHub REST API, using a fine-grained token (Contents: read-only) that the viewer pastes once; the token stays in that browser's localStorage and is sent only to api.github.com.
+
+Served by GitHub Pages from `main` / root. Source of truth: `mods/tools/dash/index.html` in the RFP Project (owner TAG: DASH).
