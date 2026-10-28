@@ -34,6 +34,14 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
 .plate > span { display: inline-block; transform: skewX(calc(var(--slant) * -1)); font: 800 26px/1 var(--display); letter-spacing: .02em; }
 .brand h1 { margin: 0; font: 700 44px/0.95 var(--display); text-transform: uppercase; letter-spacing: .01em; }
 .brand h1 small { display: block; font: 500 12px/1.2 var(--mono); color: var(--muted); letter-spacing: .12em; margin-top: 6px; }
+.live { margin-left: auto; display: flex; gap: 10px; align-self: flex-start; }
+.live[hidden] { display: none !important; }
+.stat { min-width: 92px; padding: 8px 12px 9px; border: 1px solid var(--line); background: var(--tile); }
+.stat .k { display: flex; align-items: center; gap: 6px; font: 500 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.stat .v { display: block; margin-top: 6px; font: 800 28px/1 var(--display); font-variant-numeric: tabular-nums; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--done); }
+@media (prefers-reduced-motion: no-preference) { .dot { animation: pulse 2s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: .35; } }
 .intro { flex: 1 1 340px; max-width: 62ch; margin: 0; color: var(--muted); }
 .intro b { color: var(--chalk); font-weight: 600; }
 
@@ -76,6 +84,7 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
 @media (max-width: 1180px) { .board { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px 18px; } .shead h2 { font-size: 24px; } }
 @media (max-width: 820px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) {
+  .live { margin-left: 0; }
   .board { grid-template-columns: minmax(0, 1fr); }
   .shead { min-height: 0; }
   .brand h1 { font-size: 36px; }
@@ -92,6 +101,10 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
       <h1>Lab roadmap<small>PES 2021 · MASTER LEAGUE</small></h1>
     </div>
     <p class="intro">What we're building for <b>RFP Lab</b>, a set of free mods that make PES 2021's Master League play like real football management. Research and features move through the stages below as our working boards change.</p>
+    <div class="live" id="live" hidden aria-live="off">
+      <div class="stat" title="Pages open in the last 5 minutes"><span class="k"><i class="dot" aria-hidden="true"></i>Viewers now</span><span class="v" id="v-now">–</span></div>
+      <div class="stat" title="Page views since midnight, Los Angeles time"><span class="k">Views today</span><span class="v" id="v-today">–</span></div>
+    </div>
   </header>
 
   <nav class="filters" id="filters" aria-label="Filter by system"></nav>
@@ -189,6 +202,35 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
     }
   }
   load();
+
+  /* Viewer counter: Abacus (abacus.jasoncameron.dev, free, CORS). Only increments are sent; no ids, no cookies.
+     Today = page views since midnight Los Angeles (one hit per page load).
+     Now   = pages open in the current 5-minute window (every open page hits the window's key once). */
+  const API = "https://abacus.jasoncameron.dev", NS = "rfp-lab-roadmap", WIN = 300000;
+  const live = document.getElementById("live");
+  const nf = new Intl.NumberFormat("en-US");
+  const day = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const win = () => Math.floor(Date.now() / WIN);
+  let hitWin = null;
+  const show = (id, v) => { if (typeof v === "number") { document.getElementById(id).textContent = nf.format(v); live.hidden = false; } };
+  async function call(kind, key) {
+    try { const r = await fetch(`${API}/${kind}/${NS}/${key}`, { cache: "no-store" }); return r.ok ? (await r.json()).value : (kind === "get" && r.status === 404 ? 0 : null); }
+    catch (e) { return null; }
+  }
+  async function tick(first) {
+    const w = win();
+    if (w !== hitWin) { hitWin = w; show("v-now", await call("hit", "now-" + w)); }
+    else show("v-now", await call("get", "now-" + w));
+    show("v-today", await call(first ? "hit" : "get", "views-" + day()));
+  }
+  if (document.getElementById("rfp-data")) {
+    show("v-now", 3); show("v-today", 128);   /* mockup only: sample numbers */
+  } else {
+    tick(true);
+    setInterval(() => tick(false), 60000);
+    setTimeout(function edge() { tick(false); setTimeout(edge, WIN - (Date.now() % WIN) + Math.random() * 5000); }, WIN - (Date.now() % WIN) + Math.random() * 5000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(false); });
+  }
 })();
 </script>
 </body>
