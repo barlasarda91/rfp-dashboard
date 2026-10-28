@@ -308,7 +308,7 @@ a.lb:hover { text-decoration: underline }
 // RFP Dashboard v0.6 (DASH) — read-only board over status/chats/*.json in the private archive repo.
 // Spec: RFP_Dashboard_Design.md (schema v0.4; v0.3 files still load). No build step, no third-party scripts.
 "use strict";
-const VERSION = "0.6";
+const VERSION = "0.7";
 const DEFAULT_REPO = "barlasarda91/RFP-Gamedesign-Filesystem";
 const STATUS_DIR = "status";
 const STALE = 3, DAY = 864e5, MIN_REFRESH_MS = 60e3, AUTO_REFRESH_MS = 5 * 60e3;
@@ -426,7 +426,7 @@ async function loadAll() {
     if (root === null) throw new LoadError("missing", `No ${STATUS_DIR}/ folder found in ${cfg.repo || DEFAULT_REPO}, or the token cannot see the repo.`);
   }
   const files = (Array.isArray(list) ? list : []).filter(f => f.type === "file" && f.name.endsWith(".json"));
-  const [rosterTxt, ...texts] = await Promise.all([gh(`${STATUS_DIR}/roster.json`, true), ...files.map(f => gh(f.path, true))]);
+  const [rosterTxt, urlsTxt, ...texts] = await Promise.all([gh(`${STATUS_DIR}/roster.json`, true), gh(`${STATUS_DIR}/chat_urls.json`, true), ...files.map(f => gh(f.path, true))]);
   const chats = [], bad = [];
   files.forEach((f, n) => {
     const stem = f.name.replace(/\.json$/, ""), path = `${STATUS_DIR}/chats/${f.name}`;
@@ -438,7 +438,11 @@ async function loadAll() {
   });
   let roster = null;
   if (rosterTxt) { try { roster = JSON.parse(rosterTxt.replace(/^﻿/, "")); } catch (e) { bad.push({ tag: "ROSTER", file: `${STATUS_DIR}/roster.json`, errors: ["not valid JSON"] }); } }
-  return { chats, bad, roster, files: files.length, at: Date.now() };
+  // chat_urls.json (DASH): fallback "Open chat" links; a chat's own chat_url wins
+  let urls = {};
+  if (urlsTxt) { try { const u = JSON.parse(urlsTxt.replace(/^﻿/, "")); urls = (u && typeof u.urls === "object" && u.urls) || {}; } catch (e) { bad.push({ tag: "URLS", file: `${STATUS_DIR}/chat_urls.json`, errors: ["not valid JSON"] }); } }
+  for (const c of chats) if (!c.chat_url && typeof urls[c.tag] === "string" && /^https:\/\/claude\.ai\//.test(urls[c.tag])) c.chat_url = urls[c.tag];
+  return { chats, bad, roster, urls, files: files.length, at: Date.now() };
 }
 
 // ---------- model ----------
