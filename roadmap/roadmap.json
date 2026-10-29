@@ -52,8 +52,8 @@
    "name": "More tabs and a restyled home",
    "line": "More room in the menu, and the home background and panels in the RFP look.",
    "system": "Menus & home",
-   "stage": "dev",
-   "chip": null,
+   "stage": "released",
+   "chip": "ready",
    "leads": []
   },
   {
@@ -236,7 +236,7 @@
    "name": "Reputation, TV money and sponsors",
    "line": "Leagues and clubs ranked by results; broadcast, prize and sponsorship money follow the rank, split by real league models.",
    "system": "Club economy",
-   "stage": "next",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
@@ -380,7 +380,7 @@
    "name": "Every Master League screen in the RFP look",
    "line": "Squad, transfer, club and settings screens restyled to match the RFP home.",
    "system": "Menus & home",
-   "stage": "future",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -622,7 +622,7 @@
    "name": "Real TV-money models",
    "line": "How real leagues split broadcast money: equal shares, merit, audience and history.",
    "system": "Club economy",
-   "stage": "research",
+   "stage": "researched",
    "chip": null,
    "leads": [
     "Reputation, TV money and sponsors"
