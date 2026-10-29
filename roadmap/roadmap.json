@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-10-28",
+ "updated": "2026-10-29",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -44,15 +44,15 @@
    "name": "Club-colour Master League home",
    "line": "The home menu takes your club's colours, for any club, with a slanted plate on the selected tab.",
    "system": "Menus & home",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "released",
+   "chip": "ready",
    "leads": []
   },
   {
    "name": "More tabs and a restyled home",
    "line": "More room in the menu, and the home background and panels in the RFP look.",
    "system": "Menus & home",
-   "stage": "next",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
@@ -60,7 +60,7 @@
    "name": "In-game inbox and newsroom",
    "line": "An FM-style inbox on the home screen: news from every RFP system, and decisions you answer. The lead story is always the most urgent one.",
    "system": "Menus & home",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -132,8 +132,8 @@
    "name": "Name pools for every nationality",
    "line": "Realistic names for every PES nationality, including players who carry their family's naming tradition.",
    "system": "Regens",
-   "stage": "next",
-   "chip": null,
+   "stage": "dev",
+   "chip": "testing",
    "leads": []
   },
   {
@@ -156,7 +156,7 @@
    "name": "Academy levels modelled on real academies",
    "line": "Eight academy levels, from no academy to the world's best, each with real examples. Spending decides the level, and the level decides how far your scouts reach.",
    "system": "Academy",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -164,7 +164,7 @@
    "name": "Youth growth that depends on you",
    "line": "Youngsters arrive with hidden potential and grow with coaching, facilities, minutes and form.",
    "system": "Academy",
-   "stage": "next",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
@@ -221,7 +221,7 @@
    "line": "Matchday, broadcast, commercial, trading and prize money, line by line. What you earn this season funds the next.",
    "system": "Club economy",
    "stage": "dev",
-   "chip": "testing",
+   "chip": null,
    "leads": []
   },
   {
@@ -234,9 +234,9 @@
   },
   {
    "name": "Reputation, TV money and sponsors",
-   "line": "Leagues and clubs ranked by results; broadcast and sponsorship money follow the rank.",
+   "line": "Leagues and clubs ranked by results; broadcast, prize and sponsorship money follow the rank, split by real league models.",
    "system": "Club economy",
-   "stage": "future",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -284,7 +284,7 @@
    "name": "Sackings and hirings",
    "line": "AI boards sack and hire coaches on their own expectations, at any point of the season.",
    "system": "Boards",
-   "stage": "future",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -316,7 +316,7 @@
    "name": "Referees, cards and suspensions",
    "line": "Fouls, cards and bans that behave like real football, simulated matches included.",
    "system": "Referees",
-   "stage": "future",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -332,7 +332,7 @@
    "name": "Running data",
    "line": "Distance, sprints and heatmaps, per 90 minutes.",
    "system": "Match stats",
-   "stage": "next",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
@@ -361,6 +361,46 @@
    "leads": []
   },
   {
+   "name": "News stories from your season",
+   "line": "Match reports, form runs, derbies, injuries and board reactions written for your career, in three voices.",
+   "system": "Menus & home",
+   "stage": "dev",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "One in-game hub for every RFP mod",
+   "line": "A single RFP panel in the game with clear pages, settings and key hints for every mod.",
+   "system": "Menus & home",
+   "stage": "dev",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Every Master League screen in the RFP look",
+   "line": "Squad, transfer, club and settings screens restyled to match the RFP home.",
+   "system": "Menus & home",
+   "stage": "future",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Realistic player values and wages",
+   "line": "Market values, asking fees and wage demands from our own model, calibrated on real players.",
+   "system": "Club economy",
+   "stage": "dev",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Coach profiles",
+   "line": "A new coach brings his own formation and game plan, and the team plays differently.",
+   "system": "Boards",
+   "stage": "next",
+   "chip": null,
+   "leads": []
+  },
+  {
    "name": "How the game grows young players",
    "line": "When youngsters improve in the base game, by how much, and where that can be replaced.",
    "system": "Academy",
@@ -374,7 +414,7 @@
    "name": "Youth intake in a live career",
    "line": "When new youngsters arrive and how growth behaves across a save and reload.",
    "system": "Academy",
-   "stage": "research",
+   "stage": "researched",
    "chip": null,
    "leads": [
     "Youth growth that depends on you",
@@ -565,6 +605,58 @@
    "chip": null,
    "leads": [
     "Mod data that follows your save"
+   ]
+  },
+  {
+   "name": "How the game keeps mail and news",
+   "line": "Where the base game stores its messages and news, so RFP news can sit beside them.",
+   "system": "Menus & home",
+   "stage": "research",
+   "chip": null,
+   "leads": [
+    "In-game inbox and newsroom",
+    "News stories from your season"
+   ]
+  },
+  {
+   "name": "Real TV-money models",
+   "line": "How real leagues split broadcast money: equal shares, merit, audience and history.",
+   "system": "Club economy",
+   "stage": "research",
+   "chip": null,
+   "leads": [
+    "Reputation, TV money and sponsors"
+   ]
+  },
+  {
+   "name": "Real player values and contracts",
+   "line": "Current market values, positions and contracts of real players, as the anchor for our value model.",
+   "system": "Club economy",
+   "stage": "research",
+   "chip": null,
+   "leads": [
+    "Realistic player values and wages"
+   ]
+  },
+  {
+   "name": "Talent that rises and falls",
+   "line": "Each country's talent level from real data, with golden generations and slumps tested over 30 simulated seasons.",
+   "system": "Regens",
+   "stage": "researched",
+   "chip": null,
+   "leads": [
+    "Talent that follows the real world"
+   ]
+  },
+  {
+   "name": "How the game handles coaches",
+   "line": "When the base game sacks a manager, how AI clubs swap coaches, and how a club's tactics can follow its coach.",
+   "system": "Boards",
+   "stage": "researched",
+   "chip": null,
+   "leads": [
+    "Sackings and hirings",
+    "Coach profiles"
    ]
   }
  ]
