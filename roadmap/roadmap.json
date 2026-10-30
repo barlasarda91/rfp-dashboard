@@ -365,7 +365,7 @@
    "line": "Match reports, form runs, derbies, injuries and board reactions written for your career, in three voices.",
    "system": "Menus & home",
    "stage": "dev",
-   "chip": null,
+   "chip": "testing",
    "leads": []
   },
   {
