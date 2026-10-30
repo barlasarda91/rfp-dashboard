@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-10-29",
+ "updated": "2026-10-30",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -124,8 +124,8 @@
    "name": "A unique 3D face for every regen",
    "line": "Faces and hair generated for each new player from his nationality and family background.",
    "system": "Regens",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "next",
+   "chip": null,
    "leads": []
   },
   {
