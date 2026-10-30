@@ -148,7 +148,7 @@
    "name": "Eyes and hair by region",
    "line": "Eye colour, hair colour and eye shape follow nationality.",
    "system": "Regens",
-   "stage": "future",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
