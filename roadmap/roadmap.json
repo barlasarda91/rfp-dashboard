@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-10-30",
+ "updated": "2026-10-31",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -236,7 +236,7 @@
    "name": "Reputation, TV money and sponsors",
    "line": "Leagues and clubs ranked by results; broadcast, prize and sponsorship money follow the rank, split by real league models.",
    "system": "Club economy",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
