@@ -149,7 +149,7 @@
    "line": "Eye colour, hair colour and eye shape follow nationality.",
    "system": "Regens",
    "stage": "dev",
-   "chip": "testing",
+   "chip": null,
    "leads": []
   },
   {
