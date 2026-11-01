@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-10-31",
+ "updated": "2026-11-01",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -149,7 +149,7 @@
    "line": "Eye colour, hair colour and eye shape follow nationality.",
    "system": "Regens",
    "stage": "dev",
-   "chip": null,
+   "chip": "testing",
    "leads": []
   },
   {
