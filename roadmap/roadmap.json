@@ -260,7 +260,7 @@
    "name": "Boards with character",
    "line": "Every club has an ownership model and a board type, from patient custodians to revolving-door owners.",
    "system": "Boards",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -529,7 +529,7 @@
    "name": "Real boards of the Süper Lig",
    "line": "The real ownership and board behaviour of the 18 clubs over the last three seasons.",
    "system": "Boards",
-   "stage": "research",
+   "stage": "researched",
    "chip": null,
    "leads": [
     "Boards with character"
