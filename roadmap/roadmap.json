@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-11-01",
+ "updated": "2026-11-05",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -276,7 +276,7 @@
    "name": "Boards change",
    "line": "Elections, takeovers and trustee periods change a club's board mid-career.",
    "system": "Boards",
-   "stage": "next",
+   "stage": "dev",
    "chip": null,
    "leads": []
   },
