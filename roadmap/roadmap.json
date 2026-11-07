@@ -20,16 +20,16 @@
    "name": "RFP start and loading screens",
    "line": "A clean full-screen title screen and RFP wallpapers on the way to the menu.",
    "system": "Menus & home",
-   "stage": "ready",
-   "chip": null,
+   "stage": "dev",
+   "chip": "testing",
    "leads": []
   },
   {
    "name": "RFP top menu",
    "line": "A new main menu with the RFP wordmark and slanted highlights; myClub hidden, Multiplayer in its place.",
    "system": "Menus & home",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "ready",
+   "chip": null,
    "leads": []
   },
   {
@@ -66,7 +66,7 @@
   },
   {
    "name": "Home dashboard",
-   "line": "Next match and table, squad status, scouting, academy and a Data Centre brief for the next match on one screen.",
+   "line": "THIS WEEK card, Data Centre match brief and live tiles fed by the other RFP systems.",
    "system": "Menus & home",
    "stage": "future",
    "chip": null,
@@ -90,7 +90,7 @@
   },
   {
    "name": "No OVR",
-   "line": "The overall rating disappears; judge players by what they do.",
+   "line": "The overall rating disappears; a talent score in words takes its place.",
    "system": "Player ratings",
    "stage": "future",
    "chip": null,
@@ -98,7 +98,7 @@
   },
   {
    "name": "Scouted, fuzzy ratings",
-   "line": "Your players are exact; other clubs' players are fuzzy, and a better scouting department makes them clearer.",
+   "line": "Your players are exact; other clubs' players are fuzzy, and better scouting makes them clearer.",
    "system": "Player ratings",
    "stage": "future",
    "chip": null,
@@ -145,8 +145,8 @@
    "leads": []
   },
   {
-   "name": "Eyes and hair by region",
-   "line": "Eye colour, hair colour and eye shape follow nationality.",
+   "name": "Eye colour by origin",
+   "line": "Eye colour follows family origin and skin tone, from the game's own player data.",
    "system": "Regens",
    "stage": "dev",
    "chip": "testing",
@@ -194,7 +194,7 @@
   },
   {
    "name": "Retuned playing styles",
-   "line": "Styles tuned so each one plays more like its real-world type.",
+   "line": "Styles tuned so each plays more like its real-world type.",
    "system": "Playing styles",
    "stage": "next",
    "chip": null,
@@ -226,7 +226,7 @@
   },
   {
    "name": "Board budget meeting",
-   "line": "Each pre-season the board sets limits per department; you allocate inside them; what's left becomes your transfer and wage budgets.",
+   "line": "Each pre-season the board sets limits per department; you allocate inside them; what's left is your transfer and wage budget.",
    "system": "Club economy",
    "stage": "future",
    "chip": null,
@@ -290,7 +290,7 @@
   },
   {
    "name": "Your job on the line",
-   "line": "Your board judges you on the same model, and a new board recruits differently.",
+   "line": "Your board sets objectives and judges you on the same model; a new board recruits differently.",
    "system": "Boards",
    "stage": "future",
    "chip": null,
