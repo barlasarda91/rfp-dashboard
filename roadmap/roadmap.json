@@ -1,6 +1,6 @@
 {
  "schema": "0.2",
- "updated": "2026-11-07",
+ "updated": "2026-11-08",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -140,7 +140,7 @@
    "name": "Talent that follows the real world",
    "line": "How good a new player can become depends on his country, his club and its academy, as in real football.",
    "system": "Regens",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -372,7 +372,7 @@
    "name": "One in-game hub for every RFP mod",
    "line": "A single RFP panel in the game with clear pages, settings and key hints for every mod.",
    "system": "Menus & home",
-   "stage": "dev",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
