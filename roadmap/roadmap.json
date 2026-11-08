@@ -149,7 +149,7 @@
    "line": "Eye colour follows family origin and skin tone, from the game's own player data.",
    "system": "Regens",
    "stage": "dev",
-   "chip": "testing",
+   "chip": null,
    "leads": []
   },
   {
