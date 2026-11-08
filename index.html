@@ -270,6 +270,17 @@ a.lb:hover { text-decoration: underline }
 @media (max-width: 980px) { .tcard { grid-template-columns: minmax(0, 1fr) } .tside { border-left: 0; border-top: 1px solid var(--line) } }
 
 .bname.guess { color: var(--muted); font-style: italic; }
+
+/* v0.10 parked state and release filter */
+.st-parked { background: transparent; color: var(--faint); box-shadow: inset 0 0 0 1px var(--line) }
+tr.pkhead td { height: 34px; background: var(--ground); font: 500 12px/1 var(--mono); letter-spacing: .04em; color: var(--muted); cursor: pointer; border-left: 3px solid color-mix(in srgb, var(--gc) 40%, transparent) }
+tr.pkhead:focus-visible { outline: 2px solid var(--chalk); outline-offset: -2px }
+tr.pk td { color: var(--faint); background: color-mix(in srgb, var(--ground) 60%, var(--tile)) }
+tr.pk .nm { color: var(--faint) }
+td.rel { font-size: 12px; color: var(--muted); text-align: center }
+.w.parked .lgd b { margin: 0 4px 0 8px }
+.tbl td:first-child { max-width: 0 } /* long step names ellipsize instead of widening the table */
+tr.pk .kind { opacity: .55 }
 </style>
 </head>
 <body>
@@ -298,6 +309,7 @@ a.lb:hover { text-decoration: underline }
 <div class="toolbar" id="toolbar" hidden><div class="wrap">
   <input class="search" id="q" type="search" placeholder="Search steps and asks" aria-label="Search steps and asks">
   <div class="chips" id="famchips"></div>
+  <div class="chips" id="relchips"></div>
   <div class="chips" id="stchips"></div>
   <label class="toggle"><input type="checkbox" id="showdone"> Show done</label>
 </div></div>
@@ -310,7 +322,7 @@ a.lb:hover { text-decoration: underline }
 // RFP Dashboard v0.6 (DASH) — read-only board over status/chats/*.json in the private archive repo.
 // Spec: RFP_Dashboard_Design.md (schema v0.4; v0.3 files still load). No build step, no third-party scripts.
 "use strict";
-const VERSION = "0.9";
+const VERSION = "0.10";
 const DEFAULT_REPO = "barlasarda91/RFP-Gamedesign-Filesystem";
 const STATUS_DIR = "status";
 const STALE = 3, DAY = 864e5, MIN_REFRESH_MS = 60e3, AUTO_REFRESH_MS = 5 * 60e3;
@@ -340,6 +352,9 @@ const sk = (cls, txt) => `<span class="${cls}"><span>${txt}</span></span>`;
 const ST = { stuck: "Blocked", wait: "Waiting on you", work: "Working", todo: "To do", done: "Done" };
 const ST_ORDER = ["stuck", "wait", "work", "todo", "done"];
 const PR = { 3: "High", 2: "Med", 1: "Low" };
+const RELS = ["lab1", "lab2", "lab3", "research"];
+const REL = { lab1: "Lab 1", lab2: "Lab 2", lab3: "Lab 3", research: "Research", "": "Unset" };
+const RELS_SHORT = { lab1: "L1", lab2: "L2", lab3: "L3", research: "R", "": "—" };
 const prio = p => `<span class="prio p${p}"><i></i><i></i><i></i><b>${PR[p] || "—"}</b></span>`;
 const GC_FIXED = { REGEN: "#7FB2E0", ACADEMY: "#7FB77E", DASH: "#F2EFE4", MENU: "#C9A0DC", ECON: "#E0B04A", INJURY: "#E2554B", CORE: "#9A978C", HOUSE: "#B9B4A4" };
 const GC_POOL = ["#7FB2E0", "#7FB77E", "#C9A0DC", "#E0B04A", "#E28F6B", "#8FD1C4", "#D6D07A", "#B9B4A4"];
@@ -365,7 +380,9 @@ function validate(d, stem) {
     if (!s || typeof s !== "object") { e.push(`${w}: not an object`); return; }
     if (!SID.test(s.id || "") || ids.has(s.id)) e.push(`${w}.id: missing, bad or used twice`); else ids.add(s.id);
     if (typeof s.name !== "string" || !s.name.trim()) e.push(`${w}.name: missing`);
-    if (!["done", "doing", "todo"].includes(s.state)) e.push(`${w}.state: "${s.state}" is not done, doing or todo`);
+    if (!["done", "doing", "todo", "parked"].includes(s.state)) e.push(`${w}.state: "${s.state}" is not done, doing, todo or parked`);
+    if (s.release != null && !RELS.includes(s.release)) e.push(`${w}.release: "${s.release}" is not lab1, lab2, lab3 or research`);
+    if ((s.state === "parked" || s.release != null) && d.schema !== "0.5") e.push(`${w}: parked / release need "schema": "0.5"`);
     if (!DATE.test(s.start || "") || !DATE.test(s.due || "")) e.push(`${w}: start / due not YYYY-MM-DD`);
     else if (s.start > s.due) e.push(`${w}: start is after due`);
     if (![1, 2, 3].includes(s.prio)) e.push(`${w}.prio: must be 1, 2 or 3`);
@@ -379,12 +396,13 @@ function validate(d, stem) {
     if (!["test", "decision", "approval"].includes(i.kind)) e.push(`${w}.kind: "${i.kind}" is not test, decision or approval`);
     if (typeof i.title !== "string") e.push(`${w}.title: missing`);
     if (!DT.test(i.created || "")) e.push(`${w}.created: not UTC YYYY-MM-DDTHH:MM:SSZ`);
-    if (!["open", "closed"].includes(i.state)) e.push(`${w}.state: must be open or closed`);
+    if (!["open", "closed", "parked"].includes(i.state)) e.push(`${w}.state: must be open, closed or parked`);
+    else if (i.state === "parked" && d.schema !== "0.5") e.push(`${w}.state: parked needs "schema": "0.5"`);
     for (const k of ["steps", "options"]) if (i[k] !== undefined && !Array.isArray(i[k])) e.push(`${w}.${k}: must be a list`);
     if (i.result != null && !["pass", "fail"].includes(i.result)) e.push(`${w}.result: "${i.result}" is not pass or fail`);
     if (i.deployed != null && !DT.test(i.deployed)) e.push(`${w}.deployed: not UTC YYYY-MM-DDTHH:MM:SSZ`);
     if (i.build != null && (typeof i.build !== "string" || !i.build.trim())) e.push(`${w}.build: must be a non-empty string`);
-    if (d.schema === "0.4" && i.kind === "test") {
+    if ((d.schema === "0.4" || d.schema === "0.5") && i.kind === "test") {
       if (i.state === "open" && (typeof i.build !== "string" || !i.build.trim())) e.push(`${w}.build: an open test must name the build under test`);
       if (i.state === "open" && !DT.test(i.deployed || "")) e.push(`${w}.deployed: an open test must say when the build was deployed`);
       if (i.state === "closed" && i.build && !["pass", "fail"].includes(i.result)) e.push(`${w}.result: a closed test of a named build needs pass or fail`);
@@ -451,12 +469,20 @@ async function loadAll() {
 let DATA = null, M = null;
 function buildModel(D) {
   const live = D.chats.filter(c => c.status !== "closed"), closed = D.chats.filter(c => c.status === "closed");
-  const rows = [];
+  const rows = [], parked = [];
+  for (const c of live) {
+    // parked work (schema 0.5): parked steps, parked items, and open items on a parked step leave every count
+    const pSteps = c.deliverable.steps.filter(s => s.state === "parked");
+    const pIds = new Set(pSteps.map(s => s.id));
+    const pItems = c.items.filter(i => i.state === "parked" || (i.state === "open" && pIds.has(i.step)));
+    if (pSteps.length || pItems.length) parked.push({ c, fam: famOf(c.tag), steps: pSteps, items: pItems.map(i => ({ i, s: c.deliverable.steps.find(x => x.id === i.step) })) });
+  }
   for (const c of live) for (const s of c.deliverable.steps) {
+    if (s.state === "parked") continue;
     const items = c.items.filter(i => i.state === "open" && i.step === s.id);
     const blockers = c.blockers.filter(b => b.state === "open" && b.step === s.id);
     const status = s.state === "done" ? "done" : blockers.length ? "stuck" : items.length ? "wait" : s.state === "doing" ? "work" : "todo";
-    rows.push({ c, s, fam: famOf(c.tag), key: c.tag + "/" + s.id, items, blockers, status, overdue: s.state !== "done" && dnum(s.due) < T });
+    rows.push({ c, s, fam: famOf(c.tag), rel: s.release || "", key: c.tag + "/" + s.id, items, blockers, status, overdue: s.state !== "done" && dnum(s.due) < T });
   }
   const have = new Set(D.chats.map(c => c.tag).concat(D.bad.map(b => b.tag)));
   const missing = new Map();
@@ -466,20 +492,28 @@ function buildModel(D) {
     missing.set(b.to, ex ? Object.assign(ex, { blocker: true }) : { tag: b.to, why, blocker: true });
   }
   const quiet = live.filter(c => ageD(c.updated) > STALE);
-  return { live, closed, rows, byKey: new Map(rows.map(r => [r.key, r])), missing: [...missing.values()].sort((a, b) => a.tag.localeCompare(b.tag)), quiet };
+  return { live, closed, rows, parked, byKey: new Map(rows.map(r => [r.key, r])), missing: [...missing.values()].sort((a, b) => a.tag.localeCompare(b.tag)), quiet };
 }
 
 // ---------- UI state ----------
 const initialView = () => { const h = location.hash.slice(1); return VIEWS.includes(h) ? h : "dashboard"; };
-let state = { view: initialView(), q: "", fam: null, st: null, showDone: false, open: new Set(), collapsed: new Set(), screen: "board", error: null, loading: false };
+let state = { view: initialView(), q: "", fam: null, st: null, rel: null, showDone: false, open: new Set(), collapsed: new Set(), screen: "board", error: null, loading: false };
 try { const u = JSON.parse(localStorage.getItem(KEY + "_ui") || "{}"); if (u.collapsed) state.collapsed = new Set(u.collapsed); if (u.showDone) state.showDone = true; } catch (e) {}
 function saveUi() { try { localStorage.setItem(KEY + "_ui", JSON.stringify({ collapsed: [...state.collapsed], showDone: state.showDone })); } catch (e) {} }
 
 function visible() {
   const q = state.q.trim().toLowerCase();
   return M.rows.filter(r => (state.showDone || r.status !== "done" || state.view === "timeline" || state.view === "dashboard")
-    && (!state.fam || r.fam === state.fam) && (!state.st || r.status === state.st)
+    && (!state.fam || r.fam === state.fam) && (!state.st || r.status === state.st) && relOk(r.rel)
     && (!q || (r.s.name + " " + r.c.tag + " " + r.c.chat + " " + r.items.map(i => i.title).join(" ")).toLowerCase().includes(q)));
+}
+function relOk(rel) { return state.rel == null || (rel || "") === state.rel; }
+function parkedVis() {
+  const q = state.q.trim().toLowerCase();
+  return M.parked.filter(p => !state.fam || p.fam === state.fam).map(p => ({ ...p,
+    steps: p.steps.filter(s => relOk(s.release) && (!q || (s.name + " " + p.c.tag + " " + p.c.chat).toLowerCase().includes(q))),
+    items: p.items.filter(x => relOk(x.s && x.s.release) && (!q || (x.i.title + " " + p.c.tag + " " + p.c.chat).toLowerCase().includes(q))) }))
+    .filter(p => p.steps.length || p.items.length);
 }
 function groups(list) {
   const m = new Map();
@@ -505,7 +539,8 @@ function renderHero() {
   $("hEyebrow").textContent = `Status · ${when.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · loaded ${pad(when.getHours())}:${pad(when.getMinutes())} · ${DATA.files} status file${DATA.files === 1 ? "" : "s"}`;
   $("hScore").innerHTML = `<span class="plate"><span>${asks.length}</span></span><span>Waiting on you</span>` +
     `<span class="dim"><b class="${staleBl ? "alert" : ""}">${bl.length}</b> Blocked</span><span class="dim"><b class="${over ? "alert" : ""}">${over}</b> Overdue</span><span class="dim"><b>${dueWeek}</b> Due this week</span>`;
-  $("hMeta").textContent = `${M.live.length} active chat${M.live.length === 1 ? "" : "s"} · ${rows.length} steps · ${rows.filter(r => r.status === "done").length} done · ${staleBl} blocker${staleBl === 1 ? "" : "s"} older than ${STALE} days · ${M.quiet.length} quiet · ${M.closed.length} closed · ${M.missing.length} missing · ${DATA.bad.length} file error${DATA.bad.length === 1 ? "" : "s"}`;
+  const pk = M.parked.reduce((n, p) => n + p.steps.length + p.items.length, 0);
+  $("hMeta").textContent = `${M.live.length} active chat${M.live.length === 1 ? "" : "s"} · ${rows.length} steps · ${rows.filter(r => r.status === "done").length} done · ${pk} parked · ${staleBl} blocker${staleBl === 1 ? "" : "s"} older than ${STALE} days · ${M.quiet.length} quiet · ${M.closed.length} closed · ${M.missing.length} missing · ${DATA.bad.length} file error${DATA.bad.length === 1 ? "" : "s"}`;
   const n = $("hNote"), tk = tokenState();
   n.className = "note";
   if (state.error) { n.className = "note warn"; n.innerHTML = `<span>${esc(state.error)} Showing the data loaded at ${pad(when.getHours())}:${pad(when.getMinutes())}.</span>`; }
@@ -518,6 +553,9 @@ function renderToolbar() {
   $("famchips").innerHTML = `<span class="l">Group</span><button class="chip" data-fam="" aria-pressed="${!state.fam}"><span>All</span></button>` +
     fams.map(f => `<button class="chip" data-fam="${esc(f)}" aria-pressed="${state.fam === f}"><span>${esc(f)}${cnt(f) ? `<span class="n">${cnt(f)}</span>` : ""}</span></button>`).join("");
   $("stchips").innerHTML = `<span class="l">Status</span>` + ST_ORDER.filter(k => k !== "done").map(k => `<button class="chip" data-st="${k}" aria-pressed="${state.st === k}"><span><i class="dot ${k}"></i> ${ST[k]}<span class="n">${M.rows.filter(r => r.status === k).length}</span></span></button>`).join("");
+  const rels = ["", ...RELS], rn = k => M.rows.filter(r => r.rel === k).length;
+  $("relchips").innerHTML = `<span class="l">Release</span><button class="chip" data-rel="*" aria-pressed="${state.rel == null}"><span>All</span></button>` +
+    ["lab1", "lab2", "lab3", "research", ""].filter(k => rn(k) || k === "lab1").map(k => `<button class="chip" data-rel="${k}" aria-pressed="${state.rel === k}"><span>${REL[k]}<span class="n">${rn(k)}</span></span></button>`).join("");
   $("showdone").checked = state.showDone;
 }
 
@@ -536,6 +574,7 @@ function stepRow(r) {
   return `<tr class="step ${r.status === "done" ? "done-row" : ""}" style="--gc:${g}">
     <td><div class="iname"><span class="nm" title="${esc(s.name)}">${esc(s.name)}</span>${asks ? `<button class="cnt has" type="button" data-tog="${esc(r.key)}">${asks} ask${asks > 1 ? "s" : ""}</button>` : ""}</div></td>
     <td>${tagHtml(r.c.tag)}</td>
+    <td class="mono rel" title="${REL[r.rel]}">${RELS_SHORT[r.rel]}</td>
     <td class="stc"><div class="st st-${r.status}">${ST[r.status]}</div></td>
     <td>${prio(s.prio)}</td>
     <td><div class="tl" title="${fmt(s.start)} → ${fmt(s.due)}"><i class="${r.overdue ? "over" : ""}" style="left:0;width:${r.status === "done" ? 100 : 100 * el / dur}%"></i></div></td>
@@ -544,9 +583,9 @@ function stepRow(r) {
   </tr>` + r.items.map(i => {
     const k = "x" + i.id, open = state.open.has(k), old = ageD(i.created) > STALE;
     return `<tr class="sub" style="--gc:${g}" data-tog="${esc(k)}" tabindex="0" aria-expanded="${open}"><td><div class="iname"><span class="lnk">└</span>${sk("kind " + i.kind, i.kind)}<span class="nm" title="${esc(i.title)}">${esc(i.title)}</span></div></td>
-      <td class="mono" style="font-size:12px">→ you</td><td class="stc"><div class="st st-wait">Open · ${ago(i.created)}</div></td><td></td><td></td>
+      <td class="mono" style="font-size:12px">→ you</td><td></td><td class="stc"><div class="st st-wait">Open · ${ago(i.created)}</div></td><td></td><td></td>
       <td class="mono ${old ? "over" : "faint"}" style="font-size:12px">${old ? "waiting " + Math.floor(ageD(i.created)) + " d" : "asked " + ago(i.created) + " ago"}</td><td class="mono faint" style="font-size:12px">${esc(i.id)}</td></tr>` +
-      (open ? `<tr class="det" style="--gc:${g}"><td colspan="7">${askDetail(r, i)}</td></tr>` : "");
+      (open ? `<tr class="det" style="--gc:${g}"><td colspan="8">${askDetail(r, i)}</td></tr>` : "");
   }).join("");
 }
 function filesFooter() {
@@ -555,8 +594,21 @@ function filesFooter() {
   h += DATA.bad.map(c => `<p class="closed-line" style="color:var(--alert)">${tagHtml(c.tag)}<span>File error in ${esc(c.file)}: ${c.errors.slice(0, 4).map(esc).join("; ")}${c.errors.length > 4 ? ` (+${c.errors.length - 4} more)` : ""}. The chat fixes it with status_check.py.</span></p>`).join("");
   return h;
 }
+function parkedRows(fam, g) {
+  const ps = parkedVis().filter(p => p.fam === fam);
+  if (!ps.length) return "";
+  const nS = ps.reduce((n, p) => n + p.steps.length, 0), nA = ps.reduce((n, p) => n + p.items.length, 0), k = "p:" + fam, open = state.open.has(k);
+  let h = `<tr class="pkhead" style="--gc:${g}" data-tog="${esc(k)}" tabindex="0" aria-expanded="${open}"><td colspan="8"><span class="caret">${open ? "▾" : "▸"}</span> Parked · ${nS} step${nS === 1 ? "" : "s"}${nA ? ` · ${nA} ask${nA === 1 ? "" : "s"}` : ""} <span class="faint">· later release, not waiting on you</span></td></tr>`;
+  if (!open) return h;
+  for (const p of ps) {
+    h += p.steps.map(s => `<tr class="pk" style="--gc:${g}"><td><div class="iname"><span class="nm" title="${esc(s.name)}">${esc(s.name)}</span></div></td><td>${tagHtml(p.c.tag)}</td><td class="mono rel" title="${REL[s.release || ""]}">${RELS_SHORT[s.release || ""]}</td><td class="stc"><div class="st st-parked">Parked</div></td><td>${prio(s.prio)}</td><td></td><td class="mono faint">${fmt(s.due)}</td><td></td></tr>`).join("");
+    h += p.items.map(({ i, s }) => `<tr class="pk sub" style="--gc:${g}"><td><div class="iname"><span class="lnk">└</span>${sk("kind " + i.kind, i.kind)}<span class="nm" title="${esc(i.title)}">${esc(i.title)}</span></div></td><td>${tagHtml(p.c.tag)}</td><td class="mono rel">${RELS_SHORT[(s && s.release) || ""]}</td><td class="stc"><div class="st st-parked">Parked</div></td><td></td><td></td><td class="mono faint" style="font-size:12px">${s ? "step " + esc(s.id) : ""}</td><td class="mono faint" style="font-size:12px">${esc(i.id)}</td></tr>`).join("");
+  }
+  return h;
+}
 function viewTable() {
   const gs = groups(visible());
+  for (const p of parkedVis()) if (!gs.some(x => x.fam === p.fam)) gs.push({ fam: p.fam, rows: [] });
   let h = `<div class="board">`;
   for (const g of gs) {
     const all = M.rows.filter(r => r.fam === g.fam), done = all.filter(r => r.status === "done").length;
@@ -566,12 +618,13 @@ function viewTable() {
     h += `<section class="group ${coll ? "collapsed" : ""}">
       <div class="ghead" data-gtog="${esc(g.fam)}" role="button" tabindex="0" aria-expanded="${!coll}"><span class="caret">▾</span><span class="gstripe" style="background:${gc(g.fam)}"></span><h2>${esc(g.fam)}</h2>
         <span class="gm">${tags.length} chat${tags.length > 1 ? "s" : ""} · ${done}/${all.length} steps done</span>${battery(all)}</div>
-      <div class="tbl"><table><tr><th style="width:38%">Step</th><th>Owner</th><th style="text-align:center">Status</th><th>Priority</th><th>Timeline</th><th>Due</th><th>Blocked by</th></tr>
+      <div class="tbl"><table><tr><th style="width:36%">Step</th><th>Owner</th><th title="Release">Lab</th><th style="text-align:center">Status</th><th>Priority</th><th>Timeline</th><th>Due</th><th>Blocked by</th></tr>
       ${g.rows.sort((a, b) => ST_ORDER.indexOf(a.status) - ST_ORDER.indexOf(b.status) || dnum(a.s.due) - dnum(b.s.due)).map(stepRow).join("")}
-      <tr class="gfoot"><td>${hiddenDone && !state.st ? `${hiddenDone} done step${hiddenDone > 1 ? "s" : ""} hidden` : ""}</td><td></td><td>${battery(g.rows)}</td><td></td><td></td><td></td><td></td></tr>
+      ${parkedRows(g.fam, gc(g.fam))}
+      <tr class="gfoot"><td>${hiddenDone && !state.st ? `${hiddenDone} done step${hiddenDone > 1 ? "s" : ""} hidden` : ""}</td><td></td><td></td><td>${battery(g.rows)}</td><td></td><td></td><td></td><td></td></tr>
       </table></div></section>`;
   }
-  if (!gs.length) h += `<p class="empty">${M.rows.length ? "No steps match." : "No chat status files yet. Each chat creates status/chats/&lt;TAG&gt;.json in its first reply."}</p>`;
+  if (!gs.length && !M.parked.length) h += `<p class="empty">${M.rows.length ? "No steps match." : "No chat status files yet. Each chat creates status/chats/&lt;TAG&gt;.json in its first reply."}</p>`;
   return h + filesFooter() + `</div>`;
 }
 
@@ -642,6 +695,8 @@ function openTests() {
   const out = [];
   for (const c of M.live) for (const i of c.items) {
     if (i.kind !== "test" || i.state !== "open") continue;
+    if (c.deliverable.steps.some(s => s.id === i.step && s.state === "parked")) continue;  // parked work is not waiting on you
+    if (state.rel != null) { const s0 = c.deliverable.steps.find(s => s.id === i.step); if (!relOk(s0 && s0.release)) continue; }
     if (state.fam && famOf(c.tag) !== state.fam) continue;
     const step = c.deliverable.steps.find(s => s.id === i.step);
     if (q && !(c.tag + " " + c.chat + " " + i.title + " " + (i.build || "") + " " + (step ? step.name : "")).toLowerCase().includes(q)) continue;
@@ -717,8 +772,20 @@ function viewDash() {
     <section class="w"><h3>Overdue <span class="mono">${over.length}</span></h3>${over.length ? `<div class="lst">${over.map(r => `<div class="li">${tagHtml(r.c.tag)}<span class="nm" title="${esc(r.s.name)}">${esc(r.s.name)}</span><span class="mono over">${Math.round(T - dnum(r.s.due))} d late</span></div>`).join("")}</div>` : `<p class="empty">Nothing overdue.</p>`}</section>
     <section class="w"><h3>Due this week <span class="mono">${week.length}</span></h3>${week.length ? `<div class="lst">${week.map(r => `<div class="li"><i class="dot ${r.status}"></i><span class="nm" title="${esc(r.s.name)}">${esc(r.c.tag)} · ${esc(r.s.name)}</span><span class="mono">${fmt(r.s.due)}</span></div>`).join("")}</div>` : `<p class="empty">Nothing due this week.</p>`}</section>
     <section class="w"><h3>Blockers by age <span class="mono">Registry §2</span></h3>${bl.length ? `<div class="lst">${bl.map(({ r, b }) => { const a = Math.floor(ageD(b.since + "T00:00:00Z")); return `<div class="li">${tagHtml(r.c.tag)}<span class="nm" title="${esc(b.need)}">→ ${esc(b.to)} · ${esc(b.need)}</span><span class="mono ${a > STALE ? "over" : ""}">${a} d</span></div>`; }).join("")}</div>` : `<p class="empty">No open blockers.</p>`}</section>
+    ${parkedWidget()}
     <section class="w s12"><h3>Status files <span class="mono">${esc(STATUS_DIR)}/chats · ${DATA.files} file${DATA.files === 1 ? "" : "s"}</span></h3>${filesRows ? `<div class="lst">${filesRows}</div>` : `<p class="empty">Every expected chat has a valid, recent status file.</p>`}</section>
   </div>`;
+}
+
+function parkedWidget() {
+  const ps = parkedVis();
+  const keys = ["lab1", "lab2", "lab3", "research", ""];
+  const by = k => ({ s: ps.reduce((n, p) => n + p.steps.filter(s => (s.release || "") === k).length, 0), a: ps.reduce((n, p) => n + p.items.filter(x => ((x.s && x.s.release) || "") === k).length, 0) });
+  const tot = ps.reduce((n, p) => n + p.steps.length + p.items.length, 0);
+  const chats = ps.map(p => ({ c: p.c, n: p.steps.length, a: p.items.length })).sort((a, b) => (b.n + b.a) - (a.n + a.a));
+  return `<section class="w s12 parked"><h3>Parked <span class="mono">later releases · not waiting on you</span></h3>${tot ? `
+    <div class="lgd">${keys.map(k => { const x = by(k); return x.s + x.a ? `<span>${REL[k]}<b>${x.s}</b> steps<b>${x.a}</b> asks</span>` : ""; }).join("")}</div>
+    <div class="lst">${chats.map(x => `<div class="li">${tagHtml(x.c.tag)}<span class="nm faint">${x.n} step${x.n === 1 ? "" : "s"}${x.a ? ` · ${x.a} ask${x.a === 1 ? "" : "s"}` : ""}</span><span class="mono faint">parked</span></div>`).join("")}</div>` : `<p class="empty">Nothing parked.</p>`}</section>`;
 }
 
 // ---------- setup ----------
@@ -758,7 +825,7 @@ function render() {
   te.hidden = !token(); te.className = "tok " + (tk.cls || ""); te.textContent = tk.text;
   if (setup) { renderSetup(state.setupMsg); return; }
   document.querySelectorAll(".vtab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === state.view)));
-  if (M) { const n = M.live.reduce((s, c) => s + c.items.filter(i => i.kind === "test" && i.state === "open").length, 0); $("testsn").textContent = n ? String(n) : ""; }
+  if (M) { const n = M.rows.reduce((s, r) => s + r.items.filter(i => i.kind === "test").length, 0); $("testsn").textContent = n ? String(n) : ""; }
   if (!haveData) { $("main").innerHTML = `<p class="empty" style="padding:40px 0">${state.loading ? "Loading status files…" : esc(state.error || "")}</p>`; return; }
   renderHero(); renderToolbar();
   $("stchips").hidden = state.view === "tests"; $("showdone").parentElement.hidden = state.view === "tests";
@@ -792,13 +859,14 @@ async function refresh(force) {
 $("views").addEventListener("click", e => { const b = e.target.closest(".vtab"); if (b) { state.view = b.dataset.v; history.replaceState(null, "", "#" + state.view); render(); } });
 window.addEventListener("hashchange", () => { state.view = initialView(); render(); });
 $("famchips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) { state.fam = b.dataset.fam || null; render(); } });
+$("relchips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) { state.rel = b.dataset.rel === "*" ? null : b.dataset.rel; render(); } });
 $("stchips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) { state.st = state.st === b.dataset.st ? null : b.dataset.st; render(); } });
 $("showdone").addEventListener("change", e => { state.showDone = e.target.checked; saveUi(); render(); });
 $("q").addEventListener("input", e => { state.q = e.target.value; render(); });
 function toggleFrom(el) {
   const g = el.closest("[data-gtog]"); if (g) { const f = g.dataset.gtog; state.collapsed.has(f) ? state.collapsed.delete(f) : state.collapsed.add(f); saveUi(); render(); return true; }
   const t = el.closest("[data-tog]"); if (t) { const k = t.dataset.tog;
-    const keys = k.startsWith("x") ? [k] : (M.byKey.get(k)?.items || []).map(i => "x" + i.id);
+    const keys = k.startsWith("x") || k.startsWith("p:") ? [k] : (M.byKey.get(k)?.items || []).map(i => "x" + i.id);
     const anyOpen = keys.some(x => state.open.has(x)); keys.forEach(x => anyOpen ? state.open.delete(x) : state.open.add(x)); render(); return true; }
   return false;
 }
@@ -809,7 +877,7 @@ $("tok").addEventListener("click", () => { state.screen = "setup"; render(); });
 $("refresh").addEventListener("click", () => refresh(false));
 setInterval(() => { if (document.visibilityState === "visible" && state.screen === "board" && token()) refresh(false); }, AUTO_REFRESH_MS);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastLoad > AUTO_REFRESH_MS) refresh(false); });
-$("ver").textContent = `RFP Dashboard v${VERSION} · schema 0.4`;
+$("ver").textContent = `RFP Dashboard v${VERSION} · schema 0.5`;
 
 if (token()) refresh(true); else { state.screen = "setup"; render(); }
 
