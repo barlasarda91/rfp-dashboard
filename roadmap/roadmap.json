@@ -124,7 +124,7 @@
    "name": "A unique 3D face for every regen",
    "line": "Faces and hair generated for each new player from his nationality and family background.",
    "system": "Regens",
-   "stage": "dev",
+   "stage": "next",
    "chip": null,
    "leads": []
   },
@@ -196,7 +196,7 @@
    "name": "Retuned playing styles",
    "line": "Styles tuned so each plays more like its real-world type.",
    "system": "Playing styles",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
