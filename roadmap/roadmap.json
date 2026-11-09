@@ -125,7 +125,7 @@
    "line": "Faces and hair generated for each new player from his nationality and family background.",
    "system": "Regens",
    "stage": "dev",
-   "chip": null,
+   "chip": "testing",
    "leads": []
   },
   {
