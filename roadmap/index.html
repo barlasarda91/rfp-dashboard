@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: RFP career-shell look. Slanted plate masthead, system filter rail, seven stage columns in Arda's order (Future features, Research conducting, Research done, In development, Ready, Released, Next) side by side on desktop, Released lifted on a green panel; four or two per row on smaller screens, stacked on phones. Single dark look by design. */
+/* Layout: RFP career-shell look. Slanted plate masthead, system filter rail, eight stage columns in Arda's order (Future features, Research conducting, Research done, In design, In development, Ready, Released, Next) side by side on desktop, Released lifted on a green panel; four or two per row on smaller screens, stacked on phones. Single dark look by design. */
 :root {
   --ground: #0B0B0A; --tile: #161613; --tile-2: #1F1F1B; --line: #2B2A26;
   --chalk: #F2EFE4; --muted: #A3A095; --faint: #6B6961; --plate-ink: #0A0A09;
-  --research: #7FA7C9; --now: #E0B04A; --next: #F2EFE4; --later: #6B6961; --done: #7FB77E; --ready: #B9CFA2; --done-bg: #111C13; --done-line: #2C4A2E;
+  --research: #7FA7C9; --design: #A99BD0; --now: #E0B04A; --next: #F2EFE4; --later: #6B6961; --done: #7FB77E; --ready: #B9CFA2; --done-bg: #111C13; --done-line: #2C4A2E;
   --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
@@ -55,7 +55,7 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
 .fbtn .n { font: 500 11px/1 var(--mono); margin-left: 6px; opacity: .7; }
 
 /* stages */
-.board { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 30px 12px; align-items: start; }
+.board { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 30px 12px; align-items: start; }
 .stage { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .shead { position: relative; padding: 0 0 10px 18px; min-height: 66px; border-bottom: 2px solid var(--c); }
 .shead::before { content: ""; position: absolute; left: 3px; top: 2px; width: 7px; height: 20px; background: var(--c); transform: skewX(var(--slant)); }
@@ -72,7 +72,7 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
 .more:hover { border-color: var(--c); }
 .more:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
 .empty { font-size: 13px; color: var(--faint); padding: 8px 0; }
-.s-research, .s-researched { --c: var(--research); } .s-dev { --c: var(--now); } .s-next { --c: var(--next); } .s-future { --c: var(--later); } .s-released { --c: var(--done); } .s-ready { --c: var(--ready); }
+.s-research, .s-researched { --c: var(--research); } .s-design { --c: var(--design); } .s-dev { --c: var(--now); } .s-next { --c: var(--next); } .s-future { --c: var(--later); } .s-released { --c: var(--done); } .s-ready { --c: var(--ready); }
 .s-released { background: var(--done-bg); border: 1px solid var(--done-line); padding: 10px 8px 12px; margin: -11px -9px 0; }
 .s-released .shead h2 { color: var(--done); }
 .s-released .card { background: #17251A; }
@@ -126,8 +126,9 @@ body { background: var(--ground); color: var(--chalk); font: 400 15px/1.5 var(--
     { id: "future", title: "Future features", sub: "Designed or planned, not started." },
     { id: "research", title: "Research conducting", sub: "Finding out how the game, and real football, work." },
     { id: "researched", title: "Research done", sub: "What we now know, and what it leads to." },
+    { id: "design", title: "In design", sub: "Rules and data being decided; code comes next." },
     { id: "dev", title: "In development", sub: "Being built right now." },
-    { id: "ready", title: "Ready", sub: "Done and tested; goes into the first free build." },
+    { id: "ready", title: "Ready", sub: "Passed its tests; goes into the next free build." },
     { id: "released", title: "Released", sub: "Out now and playable." },
     { id: "next", title: "Next", sub: "Starts when the current work lands." }
   ];

@@ -1,5 +1,5 @@
 {
- "schema": "0.2",
+ "schema": "0.3",
  "updated": "2026-11-10",
  "systems": [
   "Menus & home",
@@ -20,8 +20,8 @@
    "name": "RFP start and loading screens",
    "line": "A clean full-screen title screen and RFP wallpapers on the way to the menu.",
    "system": "Menus & home",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "ready",
+   "chip": null,
    "leads": []
   },
   {
@@ -90,9 +90,9 @@
   },
   {
    "name": "No OVR",
-   "line": "The overall rating disappears; a talent score in words takes its place.",
+   "line": "The overall rating is hidden on every Master League screen.",
    "system": "Player ratings",
-   "stage": "future",
+   "stage": "ready",
    "chip": null,
    "leads": []
   },
@@ -132,8 +132,8 @@
    "name": "Name pools for every nationality",
    "line": "Realistic names for every PES nationality, including players who carry their family's naming tradition.",
    "system": "Regens",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "ready",
+   "chip": null,
    "leads": []
   },
   {
@@ -148,7 +148,7 @@
    "name": "Eye colour by origin",
    "line": "Eye colour follows family origin and skin tone, from the game's own player data.",
    "system": "Regens",
-   "stage": "dev",
+   "stage": "ready",
    "chip": null,
    "leads": []
   },
@@ -164,7 +164,7 @@
    "name": "Youth growth that depends on you",
    "line": "Youngsters arrive with hidden potential and grow with coaching, facilities, minutes and form.",
    "system": "Academy",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -220,7 +220,7 @@
    "name": "Real club finances",
    "line": "Matchday, broadcast, commercial, trading and prize money, line by line. What you earn this season funds the next.",
    "system": "Club economy",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -268,7 +268,7 @@
    "name": "Boards that steer AI transfers",
    "line": "Each AI club buys, sells, loans and renews the way its board wants.",
    "system": "Boards",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -276,7 +276,7 @@
    "name": "Boards change",
    "line": "Elections, takeovers and trustee periods change a club's board mid-career.",
    "system": "Boards",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -300,7 +300,7 @@
    "name": "Injuries for every club, from real data",
    "line": "AI clubs get injured too. Match and training injuries with types and lengths from elite-football data; your medical staff change the odds.",
    "system": "Injuries",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -324,7 +324,7 @@
    "name": "New lower divisions",
    "line": "Real lower divisions added under existing leagues, with promotion and relegation.",
    "system": "Lower divisions",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -332,7 +332,7 @@
    "name": "Running data",
    "line": "Distance, sprints and heatmaps, per 90 minutes.",
    "system": "Match stats",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -372,7 +372,7 @@
    "name": "One in-game hub for every RFP mod",
    "line": "A single RFP panel in the game with clear pages, settings and key hints for every mod.",
    "system": "Menus & home",
-   "stage": "future",
+   "stage": "ready",
    "chip": null,
    "leads": []
   },
@@ -388,7 +388,7 @@
    "name": "Realistic player values and wages",
    "line": "Market values, asking fees and wage demands from our own model, calibrated on real players.",
    "system": "Club economy",
-   "stage": "dev",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
@@ -397,6 +397,94 @@
    "line": "A new coach brings his own formation and game plan, and the team plays differently.",
    "system": "Boards",
    "stage": "next",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Hair and beards by origin",
+   "line": "Hairstyles, hair colour and beards follow the player's origin, from straight cuts to curls, afros, braids and dreads.",
+   "system": "Regens",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Choose your leagues",
+   "line": "At a new career's first day, pick which leagues get full regen faces, FM-style.",
+   "system": "Menus & home",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "RFP menu font",
+   "line": "A new open-licence font across the game's menus, in HD and 4K.",
+   "system": "Menus & home",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Load and save screens",
+   "line": "Career load and save screens in the RFP look, with your club's crest on every save.",
+   "system": "Menus & home",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Menu music player",
+   "line": "Your own music in the menus: shuffle, Select for the next track, track name on screen, fades out for matches. Ships with an empty music folder.",
+   "system": "Menus & home",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Works in every game language",
+   "line": "RFP's menu labels show in whatever language the game runs in.",
+   "system": "Menus & home",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "New career set-up in RFP style",
+   "line": "The Master League set-up screens restyled: line-up, club, manager, settings and database.",
+   "system": "Menus & home",
+   "stage": "dev",
+   "chip": "testing",
+   "leads": []
+  },
+  {
+   "name": "Right-game check",
+   "line": "RFP checks your game version at start and stays off, with a message, if it is not the build RFP was made for.",
+   "system": "Foundation",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Works on any PC",
+   "line": "Finds your Master League saves wherever Windows keeps them.",
+   "system": "Foundation",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "Optional 20-minute matches",
+   "line": "Master League matches can be set to 20 minutes; off by default.",
+   "system": "Foundation",
+   "stage": "ready",
+   "chip": null,
+   "leads": []
+  },
+  {
+   "name": "One-click bug report",
+   "line": "Run one file after a crash or bug and attach the zip it makes; no personal data in it.",
+   "system": "Foundation",
+   "stage": "ready",
    "chip": null,
    "leads": []
   },
