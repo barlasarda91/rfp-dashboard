@@ -1,6 +1,6 @@
 {
  "schema": "0.3",
- "updated": "2026-11-11",
+ "updated": "2026-11-12",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -453,7 +453,7 @@
    "line": "The Master League set-up screens restyled: line-up, club, manager, settings and database.",
    "system": "Menus & home",
    "stage": "dev",
-   "chip": "testing",
+   "chip": null,
    "leads": []
   },
   {
