@@ -1,6 +1,6 @@
 {
  "schema": "0.3",
- "updated": "2026-11-12",
+ "updated": "2026-11-22",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -20,7 +20,7 @@
    "name": "RFP start and loading screens",
    "line": "A clean full-screen title screen and RFP wallpapers on the way to the menu.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -28,7 +28,7 @@
    "name": "RFP top menu",
    "line": "A new main menu with the RFP wordmark and slanted highlights; myClub hidden, Multiplayer in its place.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -36,7 +36,7 @@
    "name": "Six-tab Master League menu",
    "line": "HOME · MATCHDAY · SQUAD · RECRUITMENT · ACADEMY · CLUB, every screen where you'd look for it. The Youth Team becomes Under 21s; Square saves.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -44,7 +44,7 @@
    "name": "Club-colour Master League home",
    "line": "The home menu takes your club's colours, for any club, with a slanted plate on the selected tab.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -52,7 +52,7 @@
    "name": "More tabs and a restyled home",
    "line": "More room in the menu, and the home background and panels in the RFP look.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -84,7 +84,7 @@
    "name": "Words, not numbers",
    "line": "All 25 abilities read as words on a nine-step scale (Poor → World Class); form, weak foot and injury resistance as words too. Playing styles and the hexagon stay.",
    "system": "Player ratings",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -92,7 +92,7 @@
    "name": "No OVR",
    "line": "The overall rating is hidden on every Master League screen.",
    "system": "Player ratings",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -108,7 +108,7 @@
    "name": "New names, real nationality mix",
    "line": "Retired players come back with a new, nationality-correct name, and clubs sign the mix of nationalities real clubs do. Your youth intake is local.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -116,7 +116,7 @@
    "name": "Fresh regen profiles",
    "line": "New position, style, skills and body for every regen, a generic face instead of a retired star's, and skin tone by nationality.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -124,7 +124,7 @@
    "name": "A unique 3D face for every regen",
    "line": "Faces and hair generated for each new player from his nationality and family background.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -132,7 +132,7 @@
    "name": "Name pools for every nationality",
    "line": "Realistic names for every PES nationality, including players who carry their family's naming tradition.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -148,7 +148,7 @@
    "name": "Eye colour by origin",
    "line": "Eye colour follows family origin and skin tone, from the game's own player data.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -356,7 +356,7 @@
    "name": "Mod data that follows your save",
    "line": "RFP's career data saves and reloads with the game, and each career keeps its own.",
    "system": "Foundation",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -372,7 +372,7 @@
    "name": "One in-game hub for every RFP mod",
    "line": "A single RFP panel in the game with clear pages, settings and key hints for every mod.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -404,7 +404,7 @@
    "name": "Hair and beards by origin",
    "line": "Hairstyles, hair colour and beards follow the player's origin, from straight cuts to curls, afros, braids and dreads.",
    "system": "Regens",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -412,7 +412,7 @@
    "name": "Choose your leagues",
    "line": "At a new career's first day, pick which leagues get full regen faces, FM-style.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -420,7 +420,7 @@
    "name": "RFP menu font",
    "line": "A new open-licence font across the game's menus, in HD and 4K.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -428,7 +428,7 @@
    "name": "Load and save screens",
    "line": "Career load and save screens in the RFP look, with your club's crest on every save.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -436,7 +436,7 @@
    "name": "Menu music player",
    "line": "Your own music in the menus: shuffle, Select for the next track, track name on screen, fades out for matches. Ships with an empty music folder.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -444,7 +444,7 @@
    "name": "Works in every game language",
    "line": "RFP's menu labels show in whatever language the game runs in.",
    "system": "Menus & home",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -452,7 +452,7 @@
    "name": "New career set-up in RFP style",
    "line": "The Master League set-up screens restyled: line-up, club, manager, settings and database.",
    "system": "Menus & home",
-   "stage": "dev",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -460,7 +460,7 @@
    "name": "Right-game check",
    "line": "RFP checks your game version at start and stays off, with a message, if it is not the build RFP was made for.",
    "system": "Foundation",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -468,7 +468,7 @@
    "name": "Works on any PC",
    "line": "Finds your Master League saves wherever Windows keeps them.",
    "system": "Foundation",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -476,7 +476,7 @@
    "name": "Optional 20-minute matches",
    "line": "Master League matches can be set to 20 minutes; off by default.",
    "system": "Foundation",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
@@ -484,7 +484,7 @@
    "name": "One-click bug report",
    "line": "Run one file after a crash or bug and attach the zip it makes; no personal data in it.",
    "system": "Foundation",
-   "stage": "ready",
+   "stage": "released",
    "chip": null,
    "leads": []
   },
