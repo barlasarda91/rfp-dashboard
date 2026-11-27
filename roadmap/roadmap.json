@@ -1,6 +1,6 @@
 {
  "schema": "0.3",
- "updated": "2026-11-22",
+ "updated": "2026-11-27",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -60,7 +60,7 @@
    "name": "In-game inbox and newsroom",
    "line": "An FM-style inbox on the home screen: news from every RFP system, and decisions you answer. The lead story is always the most urgent one.",
    "system": "Menus & home",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -140,7 +140,7 @@
    "name": "Talent that follows the real world",
    "line": "How good a new player can become depends on his country, his club and its academy, as in real football.",
    "system": "Regens",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -156,7 +156,7 @@
    "name": "Academy levels modelled on real academies",
    "line": "Eight academy levels, from no academy to the world's best, each with real examples. Spending decides the level, and the level decides how far your scouts reach.",
    "system": "Academy",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -164,7 +164,7 @@
    "name": "Youth growth that depends on you",
    "line": "Youngsters arrive with hidden potential and grow with coaching, facilities, minutes and form.",
    "system": "Academy",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -220,7 +220,7 @@
    "name": "Real club finances",
    "line": "Matchday, broadcast, commercial, trading and prize money, line by line. What you earn this season funds the next.",
    "system": "Club economy",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -236,7 +236,7 @@
    "name": "Reputation, TV money and sponsors",
    "line": "Leagues and clubs ranked by results; broadcast, prize and sponsorship money follow the rank, split by real league models.",
    "system": "Club economy",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -260,7 +260,7 @@
    "name": "Boards with character",
    "line": "Every club has an ownership model and a board type, from patient custodians to revolving-door owners.",
    "system": "Boards",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -268,7 +268,7 @@
    "name": "Boards that steer AI transfers",
    "line": "Each AI club buys, sells, loans and renews the way its board wants.",
    "system": "Boards",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -276,7 +276,7 @@
    "name": "Boards change",
    "line": "Elections, takeovers and trustee periods change a club's board mid-career.",
    "system": "Boards",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -284,7 +284,7 @@
    "name": "Sackings and hirings",
    "line": "AI boards sack and hire coaches on their own expectations, at any point of the season.",
    "system": "Boards",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -300,7 +300,7 @@
    "name": "Injuries for every club, from real data",
    "line": "AI clubs get injured too. Match and training injuries with types and lengths from elite-football data; your medical staff change the odds.",
    "system": "Injuries",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -324,7 +324,7 @@
    "name": "New lower divisions",
    "line": "Real lower divisions added under existing leagues, with promotion and relegation.",
    "system": "Lower divisions",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -332,7 +332,7 @@
    "name": "Running data",
    "line": "Distance, sprints and heatmaps, per 90 minutes.",
    "system": "Match stats",
-   "stage": "design",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -364,8 +364,8 @@
    "name": "News stories from your season",
    "line": "Match reports, form runs, derbies, injuries and board reactions written for your career, in three voices.",
    "system": "Menus & home",
-   "stage": "dev",
-   "chip": "testing",
+   "stage": "future",
+   "chip": null,
    "leads": []
   },
   {
@@ -396,7 +396,7 @@
    "name": "Coach profiles",
    "line": "A new coach brings his own formation and game plan, and the team plays differently.",
    "system": "Boards",
-   "stage": "next",
+   "stage": "future",
    "chip": null,
    "leads": []
   },
@@ -635,16 +635,6 @@
    ]
   },
   {
-   "name": "Replacing the game's own income",
-   "line": "Turning off the base game's income and checking what happens to a club's value and at season end.",
-   "system": "Club economy",
-   "stage": "research",
-   "chip": null,
-   "leads": [
-    "Real club finances"
-   ]
-  },
-  {
    "name": "How the game decides injuries",
    "line": "When the base game rolls injuries in training and matches, and which clubs it covers.",
    "system": "Injuries",
@@ -693,17 +683,6 @@
    "chip": null,
    "leads": [
     "Mod data that follows your save"
-   ]
-  },
-  {
-   "name": "How the game keeps mail and news",
-   "line": "Where the base game stores its messages and news, so RFP news can sit beside them.",
-   "system": "Menus & home",
-   "stage": "research",
-   "chip": null,
-   "leads": [
-    "In-game inbox and newsroom",
-    "News stories from your season"
    ]
   },
   {
