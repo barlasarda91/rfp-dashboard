@@ -1,6 +1,6 @@
 {
  "schema": "0.3",
- "updated": "2026-11-27",
+ "updated": "2026-11-28",
  "systems": [
   "Menus & home",
   "Player ratings",
@@ -332,7 +332,7 @@
    "name": "Running data",
    "line": "Distance, sprints and heatmaps, per 90 minutes.",
    "system": "Match stats",
-   "stage": "future",
+   "stage": "design",
    "chip": null,
    "leads": []
   },
