@@ -268,8 +268,8 @@
    "name": "Boards that steer AI transfers",
    "line": "Each AI club buys, sells, loans and renews the way its board wants.",
    "system": "Boards",
-   "stage": "future",
-   "chip": null,
+   "stage": "dev",
+   "chip": "testing",
    "leads": []
   },
   {
